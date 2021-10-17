@@ -1,3 +1,6 @@
+## Ignore ApiConfiguration.cs ##
+ApiConfiguration.cs
+
 ## Web.config ##
 web.config
 
