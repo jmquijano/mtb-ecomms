@@ -1,0 +1,719 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="Models.SellerCenter.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="tbl_ecombase_currency">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="shortname" Type="varchar" MaxLength="25" />
+          <Property Name="description" Type="varchar" MaxLength="50" />
+          <Property Name="createdBy" Type="int" />
+          <Property Name="createdAt" Type="datetime" />
+        </EntityType>
+        <EntityType Name="tbl_ecombase_produnit">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="shortname" Type="varchar" MaxLength="25" />
+          <Property Name="description" Type="varchar" MaxLength="50" />
+          <Property Name="createdBy" Type="int" />
+          <Property Name="createdAt" Type="datetime" />
+        </EntityType>
+        <EntityType Name="tbl_products">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="prodName" Type="varchar" MaxLength="50" />
+          <Property Name="prodDesc" Type="text" />
+          <Property Name="prodUnit" Type="int" Nullable="false" />
+          <Property Name="prodPricePerUnit" Type="money" />
+          <Property Name="prodCurrency" Type="int" Nullable="false" />
+          <Property Name="isActive" Type="bit" Nullable="false" />
+          <Property Name="createdBy" Type="int" />
+          <Property Name="createdAt" Type="datetime" />
+          <Property Name="isDeleted" Type="bit" />
+        </EntityType>
+        <EntityType Name="tbl_sc_acl">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="aclSystemCode" Type="varchar" MaxLength="30" Nullable="false" />
+          <Property Name="description" Type="text" />
+          <Property Name="createdBy" Type="int" />
+          <Property Name="createdAt" Type="datetime" />
+          <Property Name="isActive" Type="bit" />
+        </EntityType>
+        <EntityType Name="tbl_sc_acl_roleassign">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="acl" Type="int" Nullable="false" />
+          <Property Name="role" Type="int" Nullable="false" />
+          <Property Name="createdAt" Type="datetime" />
+          <Property Name="createdBy" Type="int" />
+          <Property Name="isActive" Type="bit" />
+        </EntityType>
+        <EntityType Name="tbl_sc_roles">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="systemCode" Type="varchar" MaxLength="30" Nullable="false" />
+          <Property Name="description" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="createdBy" Type="int" />
+          <Property Name="createdAt" Type="datetime" />
+        </EntityType>
+        <EntityType Name="tbl_sc_roles_userassign">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="user" Type="int" />
+          <Property Name="role" Type="int" />
+          <Property Name="createdAt" Type="datetime" />
+          <Property Name="createdBy" Type="int" />
+          <Property Name="isActive" Type="bit" />
+        </EntityType>
+        <EntityType Name="tbl_sc_users">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="userName" Type="varchar" MaxLength="30" />
+          <Property Name="hashedPassword" Type="varchar" MaxLength="120" />
+          <Property Name="firstName" Type="varchar" MaxLength="30" />
+          <Property Name="middleName" Type="varchar" MaxLength="30" />
+          <Property Name="lastName" Type="varchar" MaxLength="30" />
+          <Property Name="emailAddress" Type="varchar" MaxLength="80" />
+          <Property Name="isActive" Type="bit" />
+          <Property Name="createdAt" Type="datetime" />
+        </EntityType>
+        <Association Name="FK_tbl_products_tbl_ecombase_currency">
+          <End Role="tbl_ecombase_currency" Type="Self.tbl_ecombase_currency" Multiplicity="1" />
+          <End Role="tbl_products" Type="Self.tbl_products" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_ecombase_currency">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_products">
+              <PropertyRef Name="prodCurrency" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbl_products_tbl_ecombase_produnit">
+          <End Role="tbl_ecombase_produnit" Type="Self.tbl_ecombase_produnit" Multiplicity="1" />
+          <End Role="tbl_products" Type="Self.tbl_products" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_ecombase_produnit">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_products">
+              <PropertyRef Name="prodUnit" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbl_products_tbl_sc_users">
+          <End Role="tbl_sc_users" Type="Self.tbl_sc_users" Multiplicity="0..1" />
+          <End Role="tbl_products" Type="Self.tbl_products" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_sc_users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_products">
+              <PropertyRef Name="createdBy" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbl_sc_acl_roleassign_tbl_sc_acl">
+          <End Role="tbl_sc_acl" Type="Self.tbl_sc_acl" Multiplicity="1" />
+          <End Role="tbl_sc_acl_roleassign" Type="Self.tbl_sc_acl_roleassign" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_sc_acl">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_sc_acl_roleassign">
+              <PropertyRef Name="acl" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbl_sc_acl_roleassign_tbl_sc_roles">
+          <End Role="tbl_sc_roles" Type="Self.tbl_sc_roles" Multiplicity="1" />
+          <End Role="tbl_sc_acl_roleassign" Type="Self.tbl_sc_acl_roleassign" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_sc_roles">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_sc_acl_roleassign">
+              <PropertyRef Name="role" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbl_sc_acl_roleassign_tbl_sc_users">
+          <End Role="tbl_sc_users" Type="Self.tbl_sc_users" Multiplicity="0..1" />
+          <End Role="tbl_sc_acl_roleassign" Type="Self.tbl_sc_acl_roleassign" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_sc_users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_sc_acl_roleassign">
+              <PropertyRef Name="createdBy" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbl_sc_acl_tbl_sc_users">
+          <End Role="tbl_sc_users" Type="Self.tbl_sc_users" Multiplicity="0..1" />
+          <End Role="tbl_sc_acl" Type="Self.tbl_sc_acl" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_sc_users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_sc_acl">
+              <PropertyRef Name="createdBy" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbl_sc_roles_tbl_sc_users">
+          <End Role="tbl_sc_users" Type="Self.tbl_sc_users" Multiplicity="0..1" />
+          <End Role="tbl_sc_roles" Type="Self.tbl_sc_roles" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_sc_users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_sc_roles">
+              <PropertyRef Name="createdBy" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbl_sc_roles_userassign_tbl_sc_roles">
+          <End Role="tbl_sc_roles" Type="Self.tbl_sc_roles" Multiplicity="0..1" />
+          <End Role="tbl_sc_roles_userassign" Type="Self.tbl_sc_roles_userassign" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_sc_roles">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_sc_roles_userassign">
+              <PropertyRef Name="role" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbl_sc_roles_userassign_tbl_sc_users">
+          <End Role="tbl_sc_users" Type="Self.tbl_sc_users" Multiplicity="0..1" />
+          <End Role="tbl_sc_roles_userassign" Type="Self.tbl_sc_roles_userassign" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_sc_users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_sc_roles_userassign">
+              <PropertyRef Name="user" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbl_sc_roles_userassign_tbl_sc_users1">
+          <End Role="tbl_sc_users" Type="Self.tbl_sc_users" Multiplicity="0..1" />
+          <End Role="tbl_sc_roles_userassign" Type="Self.tbl_sc_roles_userassign" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_sc_users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_sc_roles_userassign">
+              <PropertyRef Name="createdBy" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="ModelsSellerCenterStoreContainer">
+          <EntitySet Name="tbl_ecombase_currency" EntityType="Self.tbl_ecombase_currency" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbl_ecombase_produnit" EntityType="Self.tbl_ecombase_produnit" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbl_products" EntityType="Self.tbl_products" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbl_sc_acl" EntityType="Self.tbl_sc_acl" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbl_sc_acl_roleassign" EntityType="Self.tbl_sc_acl_roleassign" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbl_sc_roles" EntityType="Self.tbl_sc_roles" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbl_sc_roles_userassign" EntityType="Self.tbl_sc_roles_userassign" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbl_sc_users" EntityType="Self.tbl_sc_users" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_tbl_products_tbl_ecombase_currency" Association="Self.FK_tbl_products_tbl_ecombase_currency">
+            <End Role="tbl_ecombase_currency" EntitySet="tbl_ecombase_currency" />
+            <End Role="tbl_products" EntitySet="tbl_products" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbl_products_tbl_ecombase_produnit" Association="Self.FK_tbl_products_tbl_ecombase_produnit">
+            <End Role="tbl_ecombase_produnit" EntitySet="tbl_ecombase_produnit" />
+            <End Role="tbl_products" EntitySet="tbl_products" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbl_products_tbl_sc_users" Association="Self.FK_tbl_products_tbl_sc_users">
+            <End Role="tbl_sc_users" EntitySet="tbl_sc_users" />
+            <End Role="tbl_products" EntitySet="tbl_products" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbl_sc_acl_roleassign_tbl_sc_acl" Association="Self.FK_tbl_sc_acl_roleassign_tbl_sc_acl">
+            <End Role="tbl_sc_acl" EntitySet="tbl_sc_acl" />
+            <End Role="tbl_sc_acl_roleassign" EntitySet="tbl_sc_acl_roleassign" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbl_sc_acl_roleassign_tbl_sc_roles" Association="Self.FK_tbl_sc_acl_roleassign_tbl_sc_roles">
+            <End Role="tbl_sc_roles" EntitySet="tbl_sc_roles" />
+            <End Role="tbl_sc_acl_roleassign" EntitySet="tbl_sc_acl_roleassign" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbl_sc_acl_roleassign_tbl_sc_users" Association="Self.FK_tbl_sc_acl_roleassign_tbl_sc_users">
+            <End Role="tbl_sc_users" EntitySet="tbl_sc_users" />
+            <End Role="tbl_sc_acl_roleassign" EntitySet="tbl_sc_acl_roleassign" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbl_sc_acl_tbl_sc_users" Association="Self.FK_tbl_sc_acl_tbl_sc_users">
+            <End Role="tbl_sc_users" EntitySet="tbl_sc_users" />
+            <End Role="tbl_sc_acl" EntitySet="tbl_sc_acl" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbl_sc_roles_tbl_sc_users" Association="Self.FK_tbl_sc_roles_tbl_sc_users">
+            <End Role="tbl_sc_users" EntitySet="tbl_sc_users" />
+            <End Role="tbl_sc_roles" EntitySet="tbl_sc_roles" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbl_sc_roles_userassign_tbl_sc_roles" Association="Self.FK_tbl_sc_roles_userassign_tbl_sc_roles">
+            <End Role="tbl_sc_roles" EntitySet="tbl_sc_roles" />
+            <End Role="tbl_sc_roles_userassign" EntitySet="tbl_sc_roles_userassign" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbl_sc_roles_userassign_tbl_sc_users" Association="Self.FK_tbl_sc_roles_userassign_tbl_sc_users">
+            <End Role="tbl_sc_users" EntitySet="tbl_sc_users" />
+            <End Role="tbl_sc_roles_userassign" EntitySet="tbl_sc_roles_userassign" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbl_sc_roles_userassign_tbl_sc_users1" Association="Self.FK_tbl_sc_roles_userassign_tbl_sc_users1">
+            <End Role="tbl_sc_users" EntitySet="tbl_sc_users" />
+            <End Role="tbl_sc_roles_userassign" EntitySet="tbl_sc_roles_userassign" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="Models.SellerCenter" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="tbl_ecombase_currency">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="shortname" Type="String" MaxLength="25" FixedLength="false" Unicode="false" />
+          <Property Name="description" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="createdBy" Type="Int32" />
+          <Property Name="createdAt" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="tbl_products" Relationship="Self.FK_tbl_products_tbl_ecombase_currency" FromRole="tbl_ecombase_currency" ToRole="tbl_products" />
+        </EntityType>
+        <EntityType Name="tbl_ecombase_produnit">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="shortname" Type="String" MaxLength="25" FixedLength="false" Unicode="false" />
+          <Property Name="description" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="createdBy" Type="Int32" />
+          <Property Name="createdAt" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="tbl_products" Relationship="Self.FK_tbl_products_tbl_ecombase_produnit" FromRole="tbl_ecombase_produnit" ToRole="tbl_products" />
+        </EntityType>
+        <EntityType Name="tbl_products">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="prodName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="prodDesc" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Name="prodUnit" Type="Int32" Nullable="false" />
+          <Property Name="prodPricePerUnit" Type="Decimal" Precision="19" Scale="4" />
+          <Property Name="prodCurrency" Type="Int32" Nullable="false" />
+          <Property Name="isActive" Type="Boolean" Nullable="false" />
+          <Property Name="createdBy" Type="Int32" />
+          <Property Name="createdAt" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="tbl_ecombase_currency" Relationship="Self.FK_tbl_products_tbl_ecombase_currency" FromRole="tbl_products" ToRole="tbl_ecombase_currency" />
+          <NavigationProperty Name="tbl_ecombase_produnit" Relationship="Self.FK_tbl_products_tbl_ecombase_produnit" FromRole="tbl_products" ToRole="tbl_ecombase_produnit" />
+          <NavigationProperty Name="tbl_sc_users" Relationship="Self.FK_tbl_products_tbl_sc_users" FromRole="tbl_products" ToRole="tbl_sc_users" />
+          <Property Name="isDeleted" Type="Boolean" />
+        </EntityType>
+        <EntityType Name="tbl_sc_users">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" />
+          <Property Name="userName" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="hashedPassword" Type="String" MaxLength="120" FixedLength="false" Unicode="false" />
+          <Property Name="firstName" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="middleName" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="lastName" Type="String" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="emailAddress" Type="String" MaxLength="80" FixedLength="false" Unicode="false" />
+          <Property Name="isActive" Type="Boolean" />
+          <Property Name="createdAt" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="tbl_products" Relationship="Self.FK_tbl_products_tbl_sc_users" FromRole="tbl_sc_users" ToRole="tbl_products" />
+          <NavigationProperty Name="tbl_sc_acl" Relationship="Models.SellerCenter.FK_tbl_sc_acl_tbl_sc_users" FromRole="tbl_sc_users" ToRole="tbl_sc_acl" />
+          <NavigationProperty Name="tbl_sc_acl_roleassign" Relationship="Models.SellerCenter.FK_tbl_sc_acl_roleassign_tbl_sc_users" FromRole="tbl_sc_users" ToRole="tbl_sc_acl_roleassign" />
+          <NavigationProperty Name="tbl_sc_roles" Relationship="Models.SellerCenter.FK_tbl_sc_roles_tbl_sc_users" FromRole="tbl_sc_users" ToRole="tbl_sc_roles" />
+          <NavigationProperty Name="tbl_sc_roles_userassign" Relationship="Models.SellerCenter.FK_tbl_sc_roles_userassign_tbl_sc_users" FromRole="tbl_sc_users" ToRole="tbl_sc_roles_userassign" />
+          <NavigationProperty Name="tbl_sc_roles_userassign1" Relationship="Models.SellerCenter.FK_tbl_sc_roles_userassign_tbl_sc_users1" FromRole="tbl_sc_users" ToRole="tbl_sc_roles_userassign" />
+        </EntityType>
+        <Association Name="FK_tbl_products_tbl_ecombase_currency">
+          <End Role="tbl_ecombase_currency" Type="Self.tbl_ecombase_currency" Multiplicity="1" />
+          <End Role="tbl_products" Type="Self.tbl_products" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_ecombase_currency">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_products">
+              <PropertyRef Name="prodCurrency" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbl_products_tbl_ecombase_produnit">
+          <End Role="tbl_ecombase_produnit" Type="Self.tbl_ecombase_produnit" Multiplicity="1" />
+          <End Role="tbl_products" Type="Self.tbl_products" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_ecombase_produnit">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_products">
+              <PropertyRef Name="prodUnit" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbl_products_tbl_sc_users">
+          <End Role="tbl_sc_users" Type="Self.tbl_sc_users" Multiplicity="0..1" />
+          <End Role="tbl_products" Type="Self.tbl_products" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_sc_users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_products">
+              <PropertyRef Name="createdBy" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="SellerCenterDbContext" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="tbl_ecombase_currency" EntityType="Self.tbl_ecombase_currency" />
+          <EntitySet Name="tbl_ecombase_produnit" EntityType="Self.tbl_ecombase_produnit" />
+          <EntitySet Name="tbl_products" EntityType="Self.tbl_products" />
+          <EntitySet Name="tbl_sc_users" EntityType="Self.tbl_sc_users" />
+          <AssociationSet Name="FK_tbl_products_tbl_ecombase_currency" Association="Self.FK_tbl_products_tbl_ecombase_currency">
+            <End Role="tbl_ecombase_currency" EntitySet="tbl_ecombase_currency" />
+            <End Role="tbl_products" EntitySet="tbl_products" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbl_products_tbl_ecombase_produnit" Association="Self.FK_tbl_products_tbl_ecombase_produnit">
+            <End Role="tbl_ecombase_produnit" EntitySet="tbl_ecombase_produnit" />
+            <End Role="tbl_products" EntitySet="tbl_products" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbl_products_tbl_sc_users" Association="Self.FK_tbl_products_tbl_sc_users">
+            <End Role="tbl_sc_users" EntitySet="tbl_sc_users" />
+            <End Role="tbl_products" EntitySet="tbl_products" />
+          </AssociationSet>
+          <EntitySet Name="tbl_sc_acl" EntityType="Models.SellerCenter.tbl_sc_acl" />
+          <EntitySet Name="tbl_sc_acl_roleassign" EntityType="Models.SellerCenter.tbl_sc_acl_roleassign" />
+          <EntitySet Name="tbl_sc_roles" EntityType="Models.SellerCenter.tbl_sc_roles" />
+          <EntitySet Name="tbl_sc_roles_userassign" EntityType="Models.SellerCenter.tbl_sc_roles_userassign" />
+          <AssociationSet Name="FK_tbl_sc_acl_roleassign_tbl_sc_acl" Association="Models.SellerCenter.FK_tbl_sc_acl_roleassign_tbl_sc_acl">
+            <End Role="tbl_sc_acl" EntitySet="tbl_sc_acl" />
+            <End Role="tbl_sc_acl_roleassign" EntitySet="tbl_sc_acl_roleassign" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbl_sc_acl_tbl_sc_users" Association="Models.SellerCenter.FK_tbl_sc_acl_tbl_sc_users">
+            <End Role="tbl_sc_users" EntitySet="tbl_sc_users" />
+            <End Role="tbl_sc_acl" EntitySet="tbl_sc_acl" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbl_sc_acl_roleassign_tbl_sc_roles" Association="Models.SellerCenter.FK_tbl_sc_acl_roleassign_tbl_sc_roles">
+            <End Role="tbl_sc_roles" EntitySet="tbl_sc_roles" />
+            <End Role="tbl_sc_acl_roleassign" EntitySet="tbl_sc_acl_roleassign" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbl_sc_acl_roleassign_tbl_sc_users" Association="Models.SellerCenter.FK_tbl_sc_acl_roleassign_tbl_sc_users">
+            <End Role="tbl_sc_users" EntitySet="tbl_sc_users" />
+            <End Role="tbl_sc_acl_roleassign" EntitySet="tbl_sc_acl_roleassign" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbl_sc_roles_tbl_sc_users" Association="Models.SellerCenter.FK_tbl_sc_roles_tbl_sc_users">
+            <End Role="tbl_sc_users" EntitySet="tbl_sc_users" />
+            <End Role="tbl_sc_roles" EntitySet="tbl_sc_roles" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbl_sc_roles_userassign_tbl_sc_roles" Association="Models.SellerCenter.FK_tbl_sc_roles_userassign_tbl_sc_roles">
+            <End Role="tbl_sc_roles" EntitySet="tbl_sc_roles" />
+            <End Role="tbl_sc_roles_userassign" EntitySet="tbl_sc_roles_userassign" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbl_sc_roles_userassign_tbl_sc_users" Association="Models.SellerCenter.FK_tbl_sc_roles_userassign_tbl_sc_users">
+            <End Role="tbl_sc_users" EntitySet="tbl_sc_users" />
+            <End Role="tbl_sc_roles_userassign" EntitySet="tbl_sc_roles_userassign" />
+          </AssociationSet>
+          <AssociationSet Name="FK_tbl_sc_roles_userassign_tbl_sc_users1" Association="Models.SellerCenter.FK_tbl_sc_roles_userassign_tbl_sc_users1">
+            <End Role="tbl_sc_users" EntitySet="tbl_sc_users" />
+            <End Role="tbl_sc_roles_userassign" EntitySet="tbl_sc_roles_userassign" />
+          </AssociationSet>
+        </EntityContainer>
+        <EntityType Name="tbl_sc_acl">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="aclSystemCode" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="description" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Name="createdBy" Type="Int32" />
+          <Property Name="createdAt" Type="DateTime" Precision="3" />
+          <Property Name="isActive" Type="Boolean" />
+          <NavigationProperty Name="tbl_sc_acl_roleassign" Relationship="Models.SellerCenter.FK_tbl_sc_acl_roleassign_tbl_sc_acl" FromRole="tbl_sc_acl" ToRole="tbl_sc_acl_roleassign" />
+          <NavigationProperty Name="tbl_sc_users" Relationship="Models.SellerCenter.FK_tbl_sc_acl_tbl_sc_users" FromRole="tbl_sc_acl" ToRole="tbl_sc_users" />
+        </EntityType>
+        <EntityType Name="tbl_sc_acl_roleassign">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="acl" Type="Int32" Nullable="false" />
+          <Property Name="role" Type="Int32" Nullable="false" />
+          <Property Name="createdAt" Type="DateTime" Precision="3" />
+          <Property Name="createdBy" Type="Int32" />
+          <Property Name="isActive" Type="Boolean" />
+          <NavigationProperty Name="tbl_sc_acl" Relationship="Models.SellerCenter.FK_tbl_sc_acl_roleassign_tbl_sc_acl" FromRole="tbl_sc_acl_roleassign" ToRole="tbl_sc_acl" />
+          <NavigationProperty Name="tbl_sc_roles" Relationship="Models.SellerCenter.FK_tbl_sc_acl_roleassign_tbl_sc_roles" FromRole="tbl_sc_acl_roleassign" ToRole="tbl_sc_roles" />
+          <NavigationProperty Name="tbl_sc_users" Relationship="Models.SellerCenter.FK_tbl_sc_acl_roleassign_tbl_sc_users" FromRole="tbl_sc_acl_roleassign" ToRole="tbl_sc_users" />
+        </EntityType>
+        <EntityType Name="tbl_sc_roles">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="systemCode" Type="String" Nullable="false" MaxLength="30" FixedLength="false" Unicode="false" />
+          <Property Name="description" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="createdBy" Type="Int32" />
+          <Property Name="createdAt" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="tbl_sc_acl_roleassign" Relationship="Models.SellerCenter.FK_tbl_sc_acl_roleassign_tbl_sc_roles" FromRole="tbl_sc_roles" ToRole="tbl_sc_acl_roleassign" />
+          <NavigationProperty Name="tbl_sc_users" Relationship="Models.SellerCenter.FK_tbl_sc_roles_tbl_sc_users" FromRole="tbl_sc_roles" ToRole="tbl_sc_users" />
+          <NavigationProperty Name="tbl_sc_roles_userassign" Relationship="Models.SellerCenter.FK_tbl_sc_roles_userassign_tbl_sc_roles" FromRole="tbl_sc_roles" ToRole="tbl_sc_roles_userassign" />
+        </EntityType>
+        <EntityType Name="tbl_sc_roles_userassign">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="user" Type="Int32" />
+          <Property Name="role" Type="Int32" />
+          <Property Name="createdAt" Type="DateTime" Precision="3" />
+          <Property Name="createdBy" Type="Int32" />
+          <Property Name="isActive" Type="Boolean" />
+          <NavigationProperty Name="tbl_sc_roles" Relationship="Models.SellerCenter.FK_tbl_sc_roles_userassign_tbl_sc_roles" FromRole="tbl_sc_roles_userassign" ToRole="tbl_sc_roles" />
+          <NavigationProperty Name="tbl_sc_users" Relationship="Models.SellerCenter.FK_tbl_sc_roles_userassign_tbl_sc_users" FromRole="tbl_sc_roles_userassign" ToRole="tbl_sc_users" />
+          <NavigationProperty Name="tbl_sc_users1" Relationship="Models.SellerCenter.FK_tbl_sc_roles_userassign_tbl_sc_users1" FromRole="tbl_sc_roles_userassign" ToRole="tbl_sc_users" />
+        </EntityType>
+        <Association Name="FK_tbl_sc_acl_roleassign_tbl_sc_acl">
+          <End Type="Models.SellerCenter.tbl_sc_acl" Role="tbl_sc_acl" Multiplicity="1" />
+          <End Type="Models.SellerCenter.tbl_sc_acl_roleassign" Role="tbl_sc_acl_roleassign" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_sc_acl">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_sc_acl_roleassign">
+              <PropertyRef Name="acl" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbl_sc_acl_tbl_sc_users">
+          <End Type="Models.SellerCenter.tbl_sc_users" Role="tbl_sc_users" Multiplicity="0..1" />
+          <End Type="Models.SellerCenter.tbl_sc_acl" Role="tbl_sc_acl" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_sc_users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_sc_acl">
+              <PropertyRef Name="createdBy" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbl_sc_acl_roleassign_tbl_sc_roles">
+          <End Type="Models.SellerCenter.tbl_sc_roles" Role="tbl_sc_roles" Multiplicity="1" />
+          <End Type="Models.SellerCenter.tbl_sc_acl_roleassign" Role="tbl_sc_acl_roleassign" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_sc_roles">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_sc_acl_roleassign">
+              <PropertyRef Name="role" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbl_sc_acl_roleassign_tbl_sc_users">
+          <End Type="Models.SellerCenter.tbl_sc_users" Role="tbl_sc_users" Multiplicity="0..1" />
+          <End Type="Models.SellerCenter.tbl_sc_acl_roleassign" Role="tbl_sc_acl_roleassign" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_sc_users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_sc_acl_roleassign">
+              <PropertyRef Name="createdBy" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbl_sc_roles_tbl_sc_users">
+          <End Type="Models.SellerCenter.tbl_sc_users" Role="tbl_sc_users" Multiplicity="0..1" />
+          <End Type="Models.SellerCenter.tbl_sc_roles" Role="tbl_sc_roles" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_sc_users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_sc_roles">
+              <PropertyRef Name="createdBy" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbl_sc_roles_userassign_tbl_sc_roles">
+          <End Type="Models.SellerCenter.tbl_sc_roles" Role="tbl_sc_roles" Multiplicity="0..1" />
+          <End Type="Models.SellerCenter.tbl_sc_roles_userassign" Role="tbl_sc_roles_userassign" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_sc_roles">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_sc_roles_userassign">
+              <PropertyRef Name="role" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbl_sc_roles_userassign_tbl_sc_users">
+          <End Type="Models.SellerCenter.tbl_sc_users" Role="tbl_sc_users" Multiplicity="0..1" />
+          <End Type="Models.SellerCenter.tbl_sc_roles_userassign" Role="tbl_sc_roles_userassign" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_sc_users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_sc_roles_userassign">
+              <PropertyRef Name="user" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_tbl_sc_roles_userassign_tbl_sc_users1">
+          <End Type="Models.SellerCenter.tbl_sc_users" Role="tbl_sc_users" Multiplicity="0..1" />
+          <End Type="Models.SellerCenter.tbl_sc_roles_userassign" Role="tbl_sc_roles_userassign" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_sc_users">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_sc_roles_userassign">
+              <PropertyRef Name="createdBy" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="ModelsSellerCenterStoreContainer" CdmEntityContainer="SellerCenterDbContext">
+          <EntitySetMapping Name="tbl_ecombase_currency">
+            <EntityTypeMapping TypeName="Models.SellerCenter.tbl_ecombase_currency">
+              <MappingFragment StoreEntitySet="tbl_ecombase_currency">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="shortname" ColumnName="shortname" />
+                <ScalarProperty Name="description" ColumnName="description" />
+                <ScalarProperty Name="createdBy" ColumnName="createdBy" />
+                <ScalarProperty Name="createdAt" ColumnName="createdAt" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbl_ecombase_produnit">
+            <EntityTypeMapping TypeName="Models.SellerCenter.tbl_ecombase_produnit">
+              <MappingFragment StoreEntitySet="tbl_ecombase_produnit">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="shortname" ColumnName="shortname" />
+                <ScalarProperty Name="description" ColumnName="description" />
+                <ScalarProperty Name="createdBy" ColumnName="createdBy" />
+                <ScalarProperty Name="createdAt" ColumnName="createdAt" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbl_products">
+            <EntityTypeMapping TypeName="Models.SellerCenter.tbl_products">
+              <MappingFragment StoreEntitySet="tbl_products">
+                <ScalarProperty Name="isDeleted" ColumnName="isDeleted" />
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="prodName" ColumnName="prodName" />
+                <ScalarProperty Name="prodDesc" ColumnName="prodDesc" />
+                <ScalarProperty Name="prodUnit" ColumnName="prodUnit" />
+                <ScalarProperty Name="prodPricePerUnit" ColumnName="prodPricePerUnit" />
+                <ScalarProperty Name="prodCurrency" ColumnName="prodCurrency" />
+                <ScalarProperty Name="isActive" ColumnName="isActive" />
+                <ScalarProperty Name="createdBy" ColumnName="createdBy" />
+                <ScalarProperty Name="createdAt" ColumnName="createdAt" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbl_sc_users">
+            <EntityTypeMapping TypeName="Models.SellerCenter.tbl_sc_users">
+              <MappingFragment StoreEntitySet="tbl_sc_users">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="userName" ColumnName="userName" />
+                <ScalarProperty Name="hashedPassword" ColumnName="hashedPassword" />
+                <ScalarProperty Name="firstName" ColumnName="firstName" />
+                <ScalarProperty Name="middleName" ColumnName="middleName" />
+                <ScalarProperty Name="lastName" ColumnName="lastName" />
+                <ScalarProperty Name="emailAddress" ColumnName="emailAddress" />
+                <ScalarProperty Name="isActive" ColumnName="isActive" />
+                <ScalarProperty Name="createdAt" ColumnName="createdAt" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbl_sc_acl">
+            <EntityTypeMapping TypeName="Models.SellerCenter.tbl_sc_acl">
+              <MappingFragment StoreEntitySet="tbl_sc_acl">
+                <ScalarProperty Name="isActive" ColumnName="isActive" />
+                <ScalarProperty Name="createdAt" ColumnName="createdAt" />
+                <ScalarProperty Name="createdBy" ColumnName="createdBy" />
+                <ScalarProperty Name="description" ColumnName="description" />
+                <ScalarProperty Name="aclSystemCode" ColumnName="aclSystemCode" />
+                <ScalarProperty Name="id" ColumnName="id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbl_sc_acl_roleassign">
+            <EntityTypeMapping TypeName="Models.SellerCenter.tbl_sc_acl_roleassign">
+              <MappingFragment StoreEntitySet="tbl_sc_acl_roleassign">
+                <ScalarProperty Name="isActive" ColumnName="isActive" />
+                <ScalarProperty Name="createdBy" ColumnName="createdBy" />
+                <ScalarProperty Name="createdAt" ColumnName="createdAt" />
+                <ScalarProperty Name="role" ColumnName="role" />
+                <ScalarProperty Name="acl" ColumnName="acl" />
+                <ScalarProperty Name="id" ColumnName="id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbl_sc_roles">
+            <EntityTypeMapping TypeName="Models.SellerCenter.tbl_sc_roles">
+              <MappingFragment StoreEntitySet="tbl_sc_roles">
+                <ScalarProperty Name="createdAt" ColumnName="createdAt" />
+                <ScalarProperty Name="createdBy" ColumnName="createdBy" />
+                <ScalarProperty Name="description" ColumnName="description" />
+                <ScalarProperty Name="systemCode" ColumnName="systemCode" />
+                <ScalarProperty Name="id" ColumnName="id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbl_sc_roles_userassign">
+            <EntityTypeMapping TypeName="Models.SellerCenter.tbl_sc_roles_userassign">
+              <MappingFragment StoreEntitySet="tbl_sc_roles_userassign">
+                <ScalarProperty Name="isActive" ColumnName="isActive" />
+                <ScalarProperty Name="createdBy" ColumnName="createdBy" />
+                <ScalarProperty Name="createdAt" ColumnName="createdAt" />
+                <ScalarProperty Name="role" ColumnName="role" />
+                <ScalarProperty Name="user" ColumnName="user" />
+                <ScalarProperty Name="id" ColumnName="id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>
