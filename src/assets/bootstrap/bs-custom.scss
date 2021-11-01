@@ -1,0 +1,17 @@
+body {
+    * {
+      &:focus, &.focus,
+      &:active, &.active {
+        outline: transparent none 0 !important;
+        box-shadow: 0 0 0 0 rgba(0,123,255,0) !important;
+        -webkit-box-shadow: none !important;
+      }
+    }
+}
+
+/* btn */
+$btn-font-family: 'Poppins', sans-serif;
+
+@import "../../../node_modules/bootstrap/scss/bootstrap";
+
+
