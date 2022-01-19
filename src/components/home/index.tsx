@@ -1,12 +1,15 @@
-import React from "react";
+import React, { RefCallback } from "react";
 import moment from "moment";
+import { TitleComponent } from "../routes/title";
+
+import { ApiConfigProvider } from '../../config/api.conf';
 
 import "../../assets/css/antd.css";
 import "../../assets/css/custom.css";
 import "../../assets/bootstrap/bootstrap.css";
 
-import Logo from "../../assets/media/logo/1200x1200.png";
-import HeroImage from "../../assets/media/biracial1@2x.png";
+import Logo from "../../assets/media/logo/1080x1080.png";
+import HeroImage from "../../assets/media/Hero Content.png";
 import MouseDownIcon from "../../assets/media/icons8_mouse_scrolling_120px.png";
 
 // Featured Brand Logo Image Imports
@@ -17,11 +20,14 @@ import FTB_AlaskaAirlines from "../../assets/media/alaska-airlines-4@2x.png"; //
 import FTB_BookingDotCom from "../../assets/media/bookingcom@2x.png"; // 5
 
 // Educator's Message
+import EducatorsPic from "../../assets/media/julius.png";
 import VideoThumb from "../../assets/media/videothumb@2x.png";
 import EducatorMessageVideo from '../../assets/media/videos/sample_video.mp4';
 
 // About Us
 import AboutUsImage from '../../assets/media/aboutus1@2x.png';
+import PAAcademyLogo from '../../assets/media/logo/pa-academy.png';
+import PALogo from '../../assets/media/logo/pa-logo.png';
 
 // Vision & Mission
 import VisionMissionImage from '../../assets/media/Component 3 – 1@2x.png';
@@ -30,11 +36,11 @@ import VisionMissionImage from '../../assets/media/Component 3 – 1@2x.png';
 import MoneyIcon from '../../assets/media/icons8_money_120px@2x.png';
 import MoneyFreedomIcon from '../../assets/media/icons8_dove_120px@2x.png';
 import HandlingFinancesIcon from '../../assets/media/icons8_brain_120px@2x.png';
-import EnjoyingMoneyIcon from '../../assets/media/icons8_box_important_120px@2x.png';
+import EnjoyingMoneyIcon from '../../assets/media/icons8_confetti_120px_2.png';
 
 // Event Details
 import EventDetailsImage1 from '../../assets/media/EventDetailsImage@2x.png';
-import EventDetailsImage2 from '../../assets/media/Component 5 – 1@2x.png';
+import EventDetailsImage2 from '../../assets/media/WelcomeKit.png';
 import EventGoalCheckIcon from '../../assets/media/icons8_checkmark_120px@2x.png';
 
 // Event Timeline
@@ -65,8 +71,8 @@ import Portal from '@mui/material/Portal';
 import ProductFeaturesCheckIcon from '../../assets/media/icons8_checkmark_120px@2x.png';
 import ProductReservePersonPic from '../../assets/media/PersonReserve.png';
 
-import { FaCheck, FaPlus, FaMinus, FaMapMarkerAlt, FaEnvelope, FaPhoneAlt, FaFacebook, FaInstagram, FaTwitter, FaLinkedin, FaUserAlt, FaChevronDown, FaBars, FaTimes } from 'react-icons/fa';
-
+import { FaCheck, FaPlus, FaMinus, FaMapMarkerAlt, FaEnvelope, FaPhoneAlt, FaFacebook, FaInstagram, FaTwitter, FaLinkedin, FaUserAlt, FaChevronDown, FaBars, FaTimes, FaEnvelope as MailIcon, FaArrowRight, FaStripeS, FaPaypal, FaTrashAlt } from 'react-icons/fa';
+import {IoIosWarning} from 'react-icons/io';
 // FAQ
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -97,12 +103,31 @@ import { Link, Button, Element, Events, animateScroll as scroll, scrollSpy, scro
 // Drawer
 import Drawer from '@mui/material/Drawer';
 
+// Product Modal
+import Dialog, { DialogProps } from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
 
-const styles = (theme: any) => ({
-  root: {
-    backgroundColor: "red"
-  }
-});
+import LinearProgress from '@mui/material/LinearProgress';
+import CircularProgress from '@mui/material/CircularProgress';
+
+import AdapterDateFns from '@mui/lab/AdapterDateFns';
+import LocalizationProvider from '@mui/lab/LocalizationProvider';
+import MobileDatePicker from '@mui/lab/DatePicker';
+
+
+
+
+const StyledLinearProgress = withStyles({
+    colorPrimary: {
+      backgroundColor: "black"
+    },
+    barColorPrimary: {
+      backgroundColor: "red"
+    }
+  })(LinearProgress);
+
 
 interface IFeaturedBrandsDataStructure {
     name?: string;
@@ -139,6 +164,7 @@ interface IEventTimelineDataStructure {
 
 interface IProductPricingDataStructure {
     id?: any;
+    promoCode?: any;
     title?: string;
     price?: number;
     date?: {
@@ -177,6 +203,53 @@ interface IFooterLinkDataStructure {
     action?: any;
 }
 
+interface IProductDataStructure {
+    counter?: {
+        remainingEventSeat?: number;
+    };
+    validation?: {
+        promoDates?: boolean;
+        promoUtilizationCount?: boolean;
+        eventSeatCount?: boolean;
+    };
+    product?: {
+        promoCode?: string;
+        minQuantity?: number;
+        maxQuantity?: number;
+        prodName?: string;
+        prodDesc?: string;
+        price?: {
+            unitCost?: number;
+            unitType?: string;
+            currency?: string;
+        }
+    }
+}
+
+interface IMembershipForm {
+    firstName?: string;
+    middleName?: string;
+    lastName?: string;
+    emailAddress?: string;
+    birthdate?: any;
+    countryCode?: any;
+    streetAddress?: any;
+    city?: any;
+    state?: any;
+    zipCode?: any;
+}
+
+interface ICountryDataStructure {
+    id?: string;
+    name?: string;
+    code?: string;
+}
+
+interface IOrderContextDataStructure {
+    promoCode?: string;
+    orderDetails?: IMembershipForm[];
+}
+
 interface IHomeProps {
     
 }
@@ -208,20 +281,45 @@ interface IHomeState {
             social: IContactLinksDataStructure[];
         }
     };
-    majorSponsors: ISponsorsDataStructure[];
-    minorSponsors: ISponsorsDataStructure[];
+    majorSponsors?: ISponsorsDataStructure[];
+    minorSponsors?: ISponsorsDataStructure[];
     footerLinkSitemap: IFooterLinkDataStructure[];
     footerLinkProduct: IFooterLinkDataStructure[];
     footerLinkHelp: IFooterLinkDataStructure[];
     sidenavExpand: boolean;
+    productsFromDb?: {
+        individual?: IProductDataStructure[],
+        group?: IProductDataStructure[]
+    },
+    selectedProductModal?: IProductDataStructure;
+    productModalOpenState: boolean;
+    productModalRenderHere: any;
+    mainLoaderState: boolean;
+    individualMembershipForm: IMembershipForm;
+    groupMembershipForm: IMembershipForm;
+    countries?: ICountryDataStructure[];
+    orderContext?: IOrderContextDataStructure;
+    paymentSelectionModal: boolean;
+    paymentOptionLoadState: boolean;
+    reservationModalOpenState: boolean;
+    groupFullCapacityModal: boolean;
+    individualFullCapacityModal: boolean;
+    reservationFullCapacityModal: boolean;
+    messageFormBusyState?: boolean;
 }
 
-interface Props extends WithStyles<typeof styles>{ }
 
-class Home extends React.Component<typeof styles, IHomeState> {
+
+interface Props extends WithStyles<typeof styles>{ 
+
+}
+
+class Home extends React.Component<any, IHomeState> {
     pricingTableContainer: any;
 
     faqItemContainer: any;
+
+    drawerRef: any;
 
     constructor(props: any){
         super(props);
@@ -312,7 +410,7 @@ class Home extends React.Component<typeof styles, IHomeState> {
                 paragraph: 'Build a clear picture on what you want your financial future to look',
                 week: 'Week 1',
                 date: {
-                    start: '12/6/2021'
+                    start: '02/01/2022'
                 },
                 icon: EventTimelineFloatIcon
             },
@@ -321,7 +419,7 @@ class Home extends React.Component<typeof styles, IHomeState> {
                 paragraph: 'Learn on how to live a quality life on a budget.',
                 week: 'Week 2',
                 date: {
-                    start: '12/13/2021'
+                    start: '02/08/2022'
                 },
                 icon: EventTimelineSaveMoneyIcon
                 
@@ -331,43 +429,34 @@ class Home extends React.Component<typeof styles, IHomeState> {
                 paragraph: 'Get to learn about stocks and how to invest in stock market.',
                 week: 'Week 3',
                 date: {
-                    start: '12/20/2021'
+                    start: '02/15/2022'
                 },
                 icon: EventTimelineStudyIcon
             },
             {
-                title: 'BREAK!',
-                paragraph: 'Enjoy your Christmas and the New Year!',
-                week: 'Week 3-4',
-                date: {
-                    start: '12/27/2021',
-                    end: '01/03/2022'
-                } 
-            },
-            {
                 title: 'Train your Financial Muscles',
                 paragraph: 'Get to workout your financials in a group with a financial advisor.',
-                week: 'Week 5',
+                week: 'Week 4',
                 date: {
-                    start: '01/10/2022'
+                    start: '02/22/2022'
                 },
                 icon: EventTimelineWhistleIcon
             },
             {
                 title: 'Change your weakness into your key strengths',
                 paragraph: 'Learn about mindsets and how to play your strengths by knowing your weaknesses.',
-                week: 'Week 6',
+                week: 'Week 5',
                 date: {
-                    start: '01/12/2022'
+                    start: '03/01/2022'
                 },
                 icon: EventTimelineMuslceIcon
             },
             {
                 title: 'How to be wise while you are young',
                 paragraph: 'Learn key principles of handling money and how to see money.',
-                week: 'Week 7',
+                week: 'Week 6',
                 date: {
-                    start: '01/12/2022'
+                    start: '03/08/2022'
                 },
                 icon: EventTimelineGraduationIcon
             }
@@ -377,6 +466,7 @@ class Home extends React.Component<typeof styles, IHomeState> {
             individual: [
                 {
                     id: 1,
+                    promoCode: 'WON0QLCZAMXJ78VA2MF2',
                     title: 'Early Bird*',
                     price: 250.00,
                     date: {
@@ -408,6 +498,7 @@ class Home extends React.Component<typeof styles, IHomeState> {
                 },
                 {
                     id: 2,
+                    promoCode: '51KNT27NFNA617O6YTOD',
                     title: 'Regular**',
                     price: 300.00,
                     date: {
@@ -441,6 +532,7 @@ class Home extends React.Component<typeof styles, IHomeState> {
             group: [
                 {
                     id: 3,
+                    promoCode: 'F597H0U2V2MDGVEQZN76',
                     title: 'Early Bird*',
                     price: 225.00,
                     date: {
@@ -472,6 +564,7 @@ class Home extends React.Component<typeof styles, IHomeState> {
                 },
                 {
                     id: 4,
+                    promoCode: 'I90QZT1SDQI4XOIL3MB1',
                     title: 'Regular**',
                     price: 275.00,
                     date: {
@@ -516,7 +609,7 @@ class Home extends React.Component<typeof styles, IHomeState> {
                 },
                 {
                     title: 'How long will the program last?',
-                    content: 'The program lasts for 6 weeks. From Dec. 6, 2021 to Jan. 24, 2022 with 2 weeks holiday break. You and your instructors will meet once a week, every Monday via Zoom. And even after the program, we will offer continuous support to you for 12 months to monitor your progress as a complementary service for joining our pioneer batch.'
+                    content: 'The program lasts for 6 weeks. From Feb. 1 to Mar. 8, 2022 with 2 weeks holiday break. You and your instructors will meet once a week, every Monday via Zoom. And even after the program, we will offer continuous support to you for 12 months to monitor your progress as a complementary service for joining our pioneer batch.'
                 },
                 {
                     title: 'What will I get from this program?',
@@ -542,7 +635,7 @@ class Home extends React.Component<typeof styles, IHomeState> {
                 },
                 {
                     title: 'How long will the program last?',
-                    content: 'The program lasts for 6 weeks. From Dec. 6, 2021 to Jan. 24, 2022 with 2 weeks holiday break. The students and the instructors will meet once a week, every Monday via Zoom. And even after the program, we will offer your kid continuous support for 12 months through the MTB community to monitor their progress as a complementary service for letting them join our pioneer batch.'
+                    content: 'The program lasts for 6 weeks. From Feb. 1 to Mar. 8, 2022 with 2 weeks holiday break. The students and the instructors will meet once a week, every Monday via Zoom. And even after the program, we will offer your kid continuous support for 12 months through the MTB community to monitor their progress as a complementary service for letting them join our pioneer batch.'
                 },
                 {
                     title: 'What if I am not happy with the results? Can I get my money back?',
@@ -560,7 +653,7 @@ class Home extends React.Component<typeof styles, IHomeState> {
             {
                 icon: <FaEnvelope />,
                 title: 'Email',
-                content: (<span>tristan@purposeadvisory.com.au</span>)
+                content: (<span>hello@morethanbefore.com.au</span>)
             },
             {
                 icon: <FaPhoneAlt />,
@@ -584,63 +677,33 @@ class Home extends React.Component<typeof styles, IHomeState> {
             }
         ];
 
-        var majorSponsorsLocalData = [
-            {
-                title: 'Microsoft',
-                imageContext: SponsorMicrosoftLogo
-            },
-            {
-                title: 'Amazon',
-                imageContext: SponsorAmazonLogo
-            },
-            {
-                title: 'FedEx',
-                imageContext: SponsorFedexLogo
-            }
-        ];
+        var majorSponsorsLocalData = [{}];
 
-        var minorSponsorsLocalData = [
-            {
-                title: 'Alaska',
-                imageContext: SponsorAlaskaLogo
-            },
-            {
-                title: 'Booking.com',
-                imageContext: SponsorBookingLogo
-            },
-            {
-                title: 'MasterCard',
-                imageContext: SponsorMastercardLogo
-            },
-            {
-                title: 'DHL',
-                imageContext: SponsorDHLLogo
-            }
-        ]
+        var minorSponsorsLocalData = [{}];
 
         var footerLinkSitemapLocalData = [
             {
                 title: 'About',
-                action: ''
+                action: 'mtb-hp-educatorsmessage'
             },
             {
                 title: 'Event Details',
-                action: ''
+                action: 'mtb-hp-eventdetails'
             },
             {
                 title: 'FAQ',
-                action: ''
+                action: 'mtb-hp-faq'
             },
             {
                 title: 'Contact Us',
-                action: ''
+                action: 'mtb-hp-contactform'
             }
         ];
 
         var footerLinkProductLocalData = [
             {
                 title: 'Pricing',
-                action: ''
+                action: 'mtb-hp-pricing'
             },
             {
                 title: 'Services',
@@ -648,7 +711,7 @@ class Home extends React.Component<typeof styles, IHomeState> {
             },
             {
                 title: 'Reservations',
-                action: ''
+                action: 'mtb-hp-reservation'
             }
         ];
 
@@ -689,18 +752,272 @@ class Home extends React.Component<typeof styles, IHomeState> {
             footerLinkSitemap: footerLinkSitemapLocalData,
             footerLinkProduct: footerLinkProductLocalData,
             footerLinkHelp: footerLinkHelpLocalData,
-            sidenavExpand: false
+            sidenavExpand: false,
+            productModalOpenState: false,
+            productModalRenderHere: null,
+            mainLoaderState: false,
+            individualMembershipForm: {
+                firstName: undefined,
+                middleName: undefined,
+                lastName: undefined,
+                emailAddress: undefined,
+                birthdate: null,
+                countryCode: null,
+                streetAddress: null,
+                city: null,
+                state: null,
+                zipCode: null
+            },
+            groupMembershipForm: {
+                firstName: undefined,
+                middleName: undefined,
+                lastName: undefined,
+                emailAddress: undefined,
+                birthdate: null,
+                countryCode: null,
+                streetAddress: null,
+                city: null,
+                state: null,
+                zipCode: null
+            },
+            countries: [],
+            orderContext: {
+                promoCode: undefined,
+                orderDetails: []
+            },
+            paymentSelectionModal: false,
+            paymentOptionLoadState: false,
+            reservationModalOpenState: false,
+            groupFullCapacityModal: false,
+            individualFullCapacityModal: false,
+            reservationFullCapacityModal: false,
+            messageFormBusyState: false
         };
+
+        
 
         this.pricingTableContainer = React.createRef();
         this.faqItemContainer = React.createRef();
+        this.drawerRef = React.createRef();
+    }
+
+    getProductInfos(type: number, callback: any) {
+        // Set Loader State
+        this.setState({
+            mainLoaderState: true
+        });
+
+        fetch(ApiConfigProvider.BaseUrl.Purchase + "getproductinfos/" + type + "?tag[]=landing_page", {
+            method: 'GET'
+        })
+        .then(response => response.json())
+        .then((res) => {
+            callback(res);
+
+            
+        })
+        .finally(() => {
+            // Set Loader State
+            this.setState({
+                mainLoaderState: false
+            });
+        })
+        .catch((error) => {
+
+        });
+    }
+
+    getCountries() {
+        fetch(ApiConfigProvider.BaseUrl.Purchase + "countries", {
+            method: 'GET'
+        })
+        .then(response => response.json())
+        .then((res) => {
+            this.setState({
+                countries: res.Data
+            });
+        })
     }
 
     componentDidMount() {
+        Events.scrollEvent.register('begin', function(to, element) {
+            console.log('begin', arguments);
+        });
+    
+        Events.scrollEvent.register('end', function(to, element) {
+            console.log('end', arguments);
+        });
+    
+        scrollSpy.update();
         this.setState({tabPricingActive: 1, faqActive: 1});
+
+        this.getProductInfos(1, (d: any) => {
+            // console.log(d);
+            this.setState(initialState => ({
+                productsFromDb: {
+                    ...initialState.productsFromDb,
+                    individual: d.Data
+                }
+            }))
+        });
+
+        this.getProductInfos(2, (d: any) => {
+            // console.log(d);
+            this.setState(initialState => ({
+                productsFromDb: {
+                    ...initialState.productsFromDb,
+                    group: d.Data
+                }
+            }))
+        });
+
+        this.getCountries();
+    }
+
+
+
+    handleContactForm() {
+        let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        
+        // Set Message Form Busy State
+        this.setState({
+            messageFormBusyState: true
+        });
+
+        if (re.test((this.state.contact?.contactForm?.email ?? ""))) {
+            fetch(ApiConfigProvider.BaseUrl.Message + "contactform", {
+                method: 'POST',
+                body: JSON.stringify(this.state.contact.contactForm),
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+            })
+            .then(response => response.json())
+            .then((res) => {
+                // Set Message Form Busy State
+                this.setState({
+                    messageFormBusyState: false
+                });
+
+                if (res.Status) {
+                    alert(res.Message);
+                    this.setState({
+                        contact: {
+                            contactLinks: (this.state.contact.contactLinks),
+                            contactForm: {
+                                name: '',
+                                message: '',
+                                email: ''
+                            }
+                        }
+                    });
+                } else {
+                    alert(res.Message);
+                }
+            });
+        }
+    }
+
+    openProductModal(promoCode: string) {
+        this.setState({
+            mainLoaderState: true
+        });
+        fetch(ApiConfigProvider.BaseUrl.Purchase + promoCode + "/info", {
+            method: 'GET'
+        })
+        .then(response => response.json())
+        .then((res) => {
+            this.setState({
+                selectedProductModal: res.Data,
+                productModalOpenState: true
+            });
+        })
+        .finally(() => {
+            this.setState({
+                mainLoaderState: false
+            });
+        })
+
+        
+    }
+
+    openReservationModal(promoCode: string) {
+        this.setState({
+            mainLoaderState: true
+        });
+        fetch(ApiConfigProvider.BaseUrl.Purchase + promoCode + "/info", {
+            method: 'GET'
+        })
+        .then(response => response.json())
+        .then((res) => {
+            this.setState({
+                selectedProductModal: res.Data,
+                reservationModalOpenState: true
+            });
+        })
+        .finally(() => {
+            this.setState({
+                mainLoaderState: false
+            });
+        })
+
+        
+    }
+    
+    processCheckout(provider: number) {
+        this.setState({
+            paymentOptionLoadState: true
+        });
+
+        fetch(ApiConfigProvider.BaseUrl.Checkout + "create/" + (provider == 1 ? "stripe" : (provider == 2 ? "paypal" : "")), {
+            method: 'POST',
+            body: JSON.stringify(this.state.orderContext),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(response => response.json())
+        .then((res) => {
+            if (res.Status) {
+                window.location.href = "/checkout/payment?id=" + res.Data.checkout.id + "&hmac=" + res.Data.checkout.hmac;
+            }
+        })
+        .finally(() => {
+            this.setState({
+                paymentOptionLoadState: true
+            });
+        })
+    }
+
+    handleCheckEmailDuplicate(email : string) {
+        return this.state.orderContext?.orderDetails?.some(item => email === item.emailAddress) ?? false;
     }
 
     render() {
+        const fixedDataProductfeatures = [
+            {
+                checked: true,
+                text: 'Welcome Kit'
+            },
+            {
+                checked: true,
+                text: 'Exclusive Community'
+            },
+            {
+                checked: true,
+                text: 'Course resources'
+            },
+            {
+                checked: true,
+                text: '24/7 support'
+            },
+            {
+                checked: true,
+                text: 'Worksheets, Recordings'
+            },
+        ]
 
         const { 
             featuredBrands, 
@@ -718,7 +1035,8 @@ class Home extends React.Component<typeof styles, IHomeState> {
             footerLinkSitemap,
             footerLinkProduct,
             footerLinkHelp,
-            sidenavExpand 
+            sidenavExpand,
+            productsFromDb
         } = this.state;
 
         const { 
@@ -767,10 +1085,1667 @@ class Home extends React.Component<typeof styles, IHomeState> {
             return num % 2 == 0;
         }
 
-        // let pricingTableContainer = React.useRef(null);
+        const { classes } = this.props;
 
         return (
             <React.Fragment>
+                <TitleComponent title={'Home | More Than Before'} />
+                <>
+                    <div style={{
+                        position: 'fixed',
+                        top: 0,
+                        width: '100%',
+                        visibility: (this.state.mainLoaderState ? 'visible' : 'hidden')
+                    }}>
+                        <LinearProgress className={'mtb-loader'} classes={{colorPrimary: classes.colorPrimary, barColorPrimary: classes.barColorPrimary}} />
+                    </div>
+                    
+
+                </>
+                <>
+                    <Dialog
+                        fullWidth={true}
+                        maxWidth={'xs'}
+                        open={this.state.paymentSelectionModal}
+                        onClose={() => {
+                            this.setState({
+                                paymentSelectionModal: false
+                            });
+                        }}
+                        PaperProps={{
+                            style: {
+                                borderRadius: 10,
+                                padding: "0px"
+                            }
+                        }}
+                    >
+                        <div style={{
+                                
+                            width: '100%',
+                            visibility: (this.state.paymentOptionLoadState ? 'visible' : 'hidden')
+                        }}>
+                            <LinearProgress className={'mtb-loader'} sx={{
+                                height: '5px'
+                            }} classes={{colorPrimary: classes.colorPrimary, barColorPrimary: classes.barColorPrimary}} />
+                        </div>
+                        <DialogContent>
+                            
+                            <div className={'row mx-0'} style={{
+                                width: '100%'
+                            }}>
+                                <div className={'col-6'}>
+                                    <img src={Logo} width={'auto'} height={'40px'} />
+                                </div>
+                                <div className={'col-6'}></div>
+                                <div className={'col-12 my-4'}>
+                                    <h1 className={'mtb-hp-title'} style={{
+                                        fontSize: '180%'
+                                    }}>
+                                        Membership <span className={'mtb-text-color-primary'}>Payment</span>
+                                    </h1>
+                                    <span className={'mtb-hp-text1'} style={{
+                                        fontSize: '100%'
+                                    }}>
+                                        Choose your payment method.
+                                    </span>
+                                    
+                                </div>
+                                <div className={'col-12 my-3 d-grid d-block'}>
+                                    <button disabled={(this.state.paymentOptionLoadState)} onClick={() => {
+                                        this.processCheckout(1);
+                                    }} className="btn mtb-button mtb-button mtb-button-border-radius px-5 py-3 ms-0 ms-md-2" style={{
+                                        fontWeight: 'bold'
+                                    }}>
+                                        <span style={{
+                                            position: 'absolute',
+                                            marginLeft: '-10%'
+                                        }}>
+                                            
+
+                                        </span>
+                                        <span style={{
+                                            fontSize: '90%',
+                                            fontWeight: 600
+                                        }}>
+
+                                            <FaStripeS style={{
+                                                fontSize: '180%',
+                                                paddingRight: 10,
+                                                paddingTop: 0,
+                                                paddingBottom: 0,
+                                                marginRight: 0,
+                                                borderRight: '0px solid'
+                                            }} />
+
+                                            Pay with Stripe
+                                        </span>
+                                    
+                                    </button>
+                                    <div className={'mtb-hp-payment-ortext mt-4'}>
+                                        
+                                        <span>or</span>
+                                    </div>
+
+                                    {/* this.state.paymentOptionLoadState */}
+                                    <button disabled={true} onClick={() => {
+                                        this.processCheckout(2);
+                                    }}  className="btn mtb-button mtb-button-outline mtb-button-border-radius px-5 py-3 ms-0 ms-md-2" style={{
+                                        fontWeight: 'bold'
+                                    }}>
+                                        <span style={{
+                                            fontSize: '90%',
+                                            fontWeight: 600
+                                        }}>
+                                            <FaPaypal style={{
+                                                fontSize: '180%',
+                                                paddingRight: 10,
+                                                paddingTop: 0,
+                                                paddingBottom: 0,
+                                                marginRight: 0,
+                                                borderRight: '0px solid'
+                                            }} />
+                                            Pay with PayPal
+                                        </span>
+                                    
+                                    </button>
+                                    <span className={'text-center mt-3 d-block'}>Our PayPal payment is currently under maintenance, please use Stripe as a payment method.</span>
+                                </div>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                </>
+                
+                {/** Dialog/Modal for Contact Us Form (Reservation) */}
+                <>
+                <Dialog 
+                        fullWidth={true}
+                        maxWidth={'sm'}
+                        open={this.state.reservationFullCapacityModal}
+                        PaperProps={{
+                            style: {
+                                borderRadius: 10,
+                                padding: "10px"
+                            }
+                        }}
+                        onClose={() => {
+                            this.setState({
+                                reservationFullCapacityModal: false
+                            });
+                        }}
+                    >
+                        <DialogContent>
+                            <div className={'row mx-0'} style={{
+                                width: '100%'
+                            }}>
+                                <div className={'col-12 my-2 d-block d-md-flex align-items-center justify-content-center'}>
+                                    
+                                    <span className={'mtb-hp-text1 text-center text-md-start ms-0'}>
+                                        Reservations are full. We only cater limited reservations.
+                                        For more inquiries, you may contact us. 
+                                    </span>
+
+                                </div>
+                                <div className={'col-12'}>
+                                    <Form>
+                                        <Form.Group className="mb-3" controlId="contactFormName">
+                                            <Form.Label className={'mtb-hp-text1'} style={{
+                                                fontWeight: 400
+                                            }}>
+                                                Name
+                                            </Form.Label>
+                                            <InputGroup className="mb-2 py-2 px-2 mtb-hp-contactform-textfield">
+                                                <InputGroup.Text className={'border-0'} style={{
+                                                    background: 'transparent'
+                                                }}>
+                                                    <FaUserAlt />
+                                                </InputGroup.Text>
+                                                <Form.Control disabled={this.state.messageFormBusyState} autoComplete={'on'} className={'border-0 outline-0 ps-1'} value={this.state.contact?.contactForm?.name} type="text" onChange={(e) => {
+                                                    // console.log(e.target.value);
+                                                    this.setState({
+                                                        contact: {
+                                                            contactForm: {
+                                                                ...contactForm,
+                                                                name: e.target.value
+                                                            },
+                                                            contactLinks: contactLinks
+                                                        }
+                                                    });
+                                                    
+                                                }} />
+                                            </InputGroup>
+                                        </Form.Group>
+
+                                        <Form.Group className="mb-3" controlId="contactFormEmail">
+                                            <Form.Label className={'mtb-hp-text1'} style={{
+                                                fontWeight: 400
+                                            }}>
+                                                Email
+                                            </Form.Label>
+                                            <InputGroup className="mb-2 py-2 px-2 mtb-hp-contactform-textfield">
+                                                <InputGroup.Text className={'border-0'} style={{
+                                                    background: 'transparent'
+                                                }}>
+                                                    <FaEnvelope />
+                                                </InputGroup.Text>
+                                                <Form.Control disabled={this.state.messageFormBusyState} autoComplete={'on'} className={'border-0 outline-0 ps-1'} value={this.state.contact?.contactForm?.email} type="email" onChange={(e) => {
+                                                    // console.log(e.target.value);
+                                                    this.setState({
+                                                        contact: {
+                                                            contactForm: {
+                                                                ...contactForm,
+                                                                email: e.target.value
+                                                            },
+                                                            contactLinks: contactLinks
+                                                        }
+                                                    });
+                                                    
+                                                }} />
+                                            </InputGroup>
+                                        </Form.Group>
+
+                                        <Form.Group className="mb-3" controlId="contactFormEmail">
+                                            <Form.Label className={'mtb-hp-text1'} style={{
+                                                fontWeight: 400,
+                                                
+                                            }}>
+                                                Message
+                                            </Form.Label>
+                                            <InputGroup className="mb-2 py-2 px-2 mtb-hp-contactform-textfield align-items-start">
+                                                <Form.Control disabled={this.state.messageFormBusyState} autoComplete={'off'} className={'border-0 outline-0 ps-1'} value={this.state.contact?.contactForm?.message} as={'textarea'} rows={3} onChange={(e) => {
+                                                    // console.log(e.target.value);
+                                                    this.setState({
+                                                        contact: {
+                                                            contactForm: {
+                                                                ...contactForm,
+                                                                message: e.target.value
+                                                            },
+                                                            contactLinks: contactLinks
+                                                        }
+                                                    });
+                                                    
+                                                }} />
+                                            </InputGroup>
+                                        </Form.Group>
+                                    </Form>
+                                    <div className={'d-grid d-block'}>
+                                        <button className={'btn mtb-button mtb-button-border-radius py-3'} style={{
+                                            fontWeight: 600,
+                                            fontSize: '100%'
+                                        }} onClick={() => {
+                                            this.handleContactForm();
+                                            this.setState({
+                                                reservationFullCapacityModal: false
+                                            })
+                                            // console.log(contactForm);
+                                        }}>
+                                            {this.state.messageFormBusyState ? (
+                                                <div style={{
+                            
+                                                    width: '100%',
+                                                    visibility: 'visible'
+                                                }}>
+                                                    <CircularProgress size={30} className={'mtb-loader'} sx={{
+                                                        color: '#fff'
+                                                    }} />
+                                                </div>
+                                            ) : (
+                                                <span>Submit</span>
+                                            ) }
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                </>
+
+                {/** Dialog/Modal for Contact Us Form (When the seat count available is 0, for Individual Membership) */}
+                <>
+                <Dialog 
+                        fullWidth={true}
+                        maxWidth={'sm'}
+                        open={this.state.individualFullCapacityModal}
+                        PaperProps={{
+                            style: {
+                                borderRadius: 10,
+                                padding: "10px"
+                            }
+                        }}
+                        onClose={() => {
+                            this.setState({
+                                individualFullCapacityModal: false
+                            });
+                        }}
+                    >
+                        <DialogContent>
+                            <div className={'row mx-0'} style={{
+                                width: '100%'
+                            }}>
+                                <div className={'col-12 my-2 d-block d-md-flex align-items-center justify-content-center'}>
+                                    
+                                    <span className={'mtb-hp-text1 text-center text-md-start ms-0'}>
+                                        The current available seats are full for this batch but don't worry we will have another batch.
+                                        You may contact us to join the next batch.
+                                    </span>
+
+                                </div>
+                                <div className={'col-12'}>
+                                    <Form>
+                                        <Form.Group className="mb-3" controlId="contactFormName">
+                                            <Form.Label className={'mtb-hp-text1'} style={{
+                                                fontWeight: 400
+                                            }}>
+                                                Name
+                                            </Form.Label>
+                                            <InputGroup className="mb-2 py-2 px-2 mtb-hp-contactform-textfield">
+                                                <InputGroup.Text className={'border-0'} style={{
+                                                    background: 'transparent'
+                                                }}>
+                                                    <FaUserAlt />
+                                                </InputGroup.Text>
+                                                <Form.Control disabled={this.state.messageFormBusyState} autoComplete={'on'} className={'border-0 outline-0 ps-1'} value={this.state.contact?.contactForm?.name} type="text" onChange={(e) => {
+                                                    // console.log(e.target.value);
+                                                    this.setState({
+                                                        contact: {
+                                                            contactForm: {
+                                                                ...contactForm,
+                                                                name: e.target.value
+                                                            },
+                                                            contactLinks: contactLinks
+                                                        }
+                                                    });
+                                                    
+                                                }} />
+                                            </InputGroup>
+                                        </Form.Group>
+
+                                        <Form.Group className="mb-3" controlId="contactFormEmail">
+                                            <Form.Label className={'mtb-hp-text1'} style={{
+                                                fontWeight: 400
+                                            }}>
+                                                Email
+                                            </Form.Label>
+                                            <InputGroup className="mb-2 py-2 px-2 mtb-hp-contactform-textfield">
+                                                <InputGroup.Text className={'border-0'} style={{
+                                                    background: 'transparent'
+                                                }}>
+                                                    <FaEnvelope />
+                                                </InputGroup.Text>
+                                                <Form.Control disabled={this.state.messageFormBusyState} autoComplete={'on'} className={'border-0 outline-0 ps-1'} value={this.state.contact?.contactForm?.email} type="email" onChange={(e) => {
+                                                    // console.log(e.target.value);
+                                                    this.setState({
+                                                        contact: {
+                                                            contactForm: {
+                                                                ...contactForm,
+                                                                email: e.target.value
+                                                            },
+                                                            contactLinks: contactLinks
+                                                        }
+                                                    });
+                                                    
+                                                }} />
+                                            </InputGroup>
+                                        </Form.Group>
+
+                                        <Form.Group className="mb-3" controlId="contactFormEmail">
+                                            <Form.Label className={'mtb-hp-text1'} style={{
+                                                fontWeight: 400,
+                                                
+                                            }}>
+                                                Message
+                                            </Form.Label>
+                                            <InputGroup className="mb-2 py-2 px-2 mtb-hp-contactform-textfield align-items-start">
+                                                <Form.Control disabled={this.state.messageFormBusyState} autoComplete={'off'} className={'border-0 outline-0 ps-1'} value={this.state.contact?.contactForm?.message} as={'textarea'} rows={3} onChange={(e) => {
+                                                    // console.log(e.target.value);
+                                                    this.setState({
+                                                        contact: {
+                                                            contactForm: {
+                                                                ...contactForm,
+                                                                message: e.target.value
+                                                            },
+                                                            contactLinks: contactLinks
+                                                        }
+                                                    });
+                                                    
+                                                }} />
+                                            </InputGroup>
+                                        </Form.Group>
+                                    </Form>
+                                    <div className={'d-grid d-block'}>
+                                        <button className={'btn mtb-button mtb-button-border-radius py-3'} style={{
+                                            fontWeight: 600,
+                                            fontSize: '100%'
+                                        }} onClick={() => {
+                                            this.handleContactForm();
+                                            this.setState({
+                                                individualFullCapacityModal: false
+                                            })
+                                            // console.log(contactForm);
+                                        }}>
+                                            {this.state.messageFormBusyState ? (
+                                                <div style={{
+                            
+                                                    width: '100%',
+                                                    visibility: 'visible'
+                                                }}>
+                                                    <CircularProgress size={30} className={'mtb-loader'} sx={{
+                                                        color: '#fff'
+                                                    }} />
+                                                </div>
+                                            ) : (
+                                                <span>Submit</span>
+                                            ) }
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                </>
+
+                {/** Dialog/Modal for Contact Us Form (When the total number of members exceeded the current available seats) */}
+                <>
+                    <Dialog 
+                        fullWidth={true}
+                        maxWidth={'sm'}
+                        open={this.state.groupFullCapacityModal}
+                        PaperProps={{
+                            style: {
+                                borderRadius: 10,
+                                padding: "10px"
+                            }
+                        }}
+                        onClose={() => {
+                            this.setState({
+                                groupFullCapacityModal: false
+                            });
+                        }}
+                    >
+                        <DialogContent>
+                            <div className={'row mx-0'} style={{
+                                width: '100%'
+                            }}>
+                                <div className={'col-12 my-2 d-block d-md-flex align-items-center justify-content-center'}>
+                                    
+                                    <span className={'mtb-hp-text1 text-center text-md-start ms-0'}>The number of your group's members exceeded the current available capacity. 
+                                    You may contact us to have your group in a special batch.
+                                    </span>
+
+                                </div>
+                                <div className={'col-12'}>
+                                    <Form>
+                                        <Form.Group className="mb-3" controlId="contactFormName">
+                                            <Form.Label className={'mtb-hp-text1'} style={{
+                                                fontWeight: 400
+                                            }}>
+                                                Name
+                                            </Form.Label>
+                                            <InputGroup className="mb-2 py-2 px-2 mtb-hp-contactform-textfield">
+                                                <InputGroup.Text className={'border-0'} style={{
+                                                    background: 'transparent'
+                                                }}>
+                                                    <FaUserAlt />
+                                                </InputGroup.Text>
+                                                <Form.Control disabled={this.state.messageFormBusyState} autoComplete={'on'} className={'border-0 outline-0 ps-1'} value={this.state.contact?.contactForm?.name} type="text" onChange={(e) => {
+                                                    // console.log(e.target.value);
+                                                    this.setState({
+                                                        contact: {
+                                                            contactForm: {
+                                                                ...contactForm,
+                                                                name: e.target.value
+                                                            },
+                                                            contactLinks: contactLinks
+                                                        }
+                                                    });
+                                                    
+                                                }} />
+                                            </InputGroup>
+                                        </Form.Group>
+
+                                        <Form.Group className="mb-3" controlId="contactFormEmail">
+                                            <Form.Label className={'mtb-hp-text1'} style={{
+                                                fontWeight: 400
+                                            }}>
+                                                Email
+                                            </Form.Label>
+                                            <InputGroup className="mb-2 py-2 px-2 mtb-hp-contactform-textfield">
+                                                <InputGroup.Text className={'border-0'} style={{
+                                                    background: 'transparent'
+                                                }}>
+                                                    <FaEnvelope />
+                                                </InputGroup.Text>
+                                                <Form.Control disabled={this.state.messageFormBusyState} autoComplete={'on'} className={'border-0 outline-0 ps-1'} value={this.state.contact?.contactForm?.email} type="email" onChange={(e) => {
+                                                    // console.log(e.target.value);
+                                                    this.setState({
+                                                        contact: {
+                                                            contactForm: {
+                                                                ...contactForm,
+                                                                email: e.target.value
+                                                            },
+                                                            contactLinks: contactLinks
+                                                        }
+                                                    });
+                                                    
+                                                }} />
+                                            </InputGroup>
+                                        </Form.Group>
+
+                                        <Form.Group className="mb-3" controlId="contactFormEmail">
+                                            <Form.Label className={'mtb-hp-text1'} style={{
+                                                fontWeight: 400,
+                                                
+                                            }}>
+                                                Message
+                                            </Form.Label>
+                                            <InputGroup className="mb-2 py-2 px-2 mtb-hp-contactform-textfield align-items-start">
+                                                <Form.Control disabled={this.state.messageFormBusyState} autoComplete={'off'} className={'border-0 outline-0 ps-1'} value={this.state.contact?.contactForm?.message} as={'textarea'} rows={3} onChange={(e) => {
+                                                    // console.log(e.target.value);
+                                                    this.setState({
+                                                        contact: {
+                                                            contactForm: {
+                                                                ...contactForm,
+                                                                message: e.target.value
+                                                            },
+                                                            contactLinks: contactLinks
+                                                        }
+                                                    });
+                                                    
+                                                }} />
+                                            </InputGroup>
+                                        </Form.Group>
+                                    </Form>
+                                    <div className={'d-grid d-block'}>
+                                        <button className={'btn mtb-button mtb-button-border-radius py-3'} style={{
+                                            fontWeight: 600,
+                                            fontSize: '100%'
+                                        }} onClick={() => {
+                                            this.handleContactForm();
+                                            this.setState({
+                                                groupFullCapacityModal: false
+                                            })
+                                            // console.log(contactForm);
+                                        }}>
+                                            {this.state.messageFormBusyState ? (
+                                                <div style={{
+                            
+                                                    width: '100%',
+                                                    visibility: 'visible'
+                                                }}>
+                                                    <CircularProgress size={30} className={'mtb-loader'} sx={{
+                                                        color: '#fff'
+                                                    }} />
+                                                </div>
+                                            ) : (
+                                                <span>Submit</span>
+                                            ) }
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                </>
+                {/** Dialog/Modal for Reservation */}
+                <>
+                    <Dialog
+                        fullWidth={true}
+                        maxWidth={(this.state.selectedProductModal?.product?.minQuantity ?? 0) <= 1 ? 'sm' : 'lg'}
+                        open={this.state.reservationModalOpenState}
+                        onClose={() => {
+                            this.setState({
+                                productModalOpenState: false,
+                                individualMembershipForm: {
+                                    firstName: undefined,
+                                    middleName: undefined,
+                                    lastName: undefined,
+                                    emailAddress: undefined,
+                                    birthdate: null,
+                                    countryCode: null,
+                                    streetAddress: undefined,
+                                    city: undefined,
+                                    state: null,
+                                    zipCode: null
+                    
+                                }
+                            });
+                        }}
+                        PaperProps={{
+                            style: {
+                                borderRadius: 10,
+                                padding: "10px"
+                            }
+                        }}
+                    >
+                        <DialogContent>
+                            <div className={'row mx-0'} style={{
+                                width: '100%'
+                            }}>
+                                <div className={'col-6'}>
+                                    <img src={Logo} width={'auto'} height={'40px'} />
+                                </div>
+                                <div className={'col-6'}></div>
+                                <div className={'col-12 my-4'}>
+                                    <h1 className={'mtb-hp-title'}>
+                                        Reserve <span className={'mtb-text-color-primary'}>Now</span>
+                                    </h1>
+                                    <span className={'mtb-hp-text1'}>Reserve now and pay the remaining amount 2 weeks before the event.</span>
+                                </div>
+                                <Form className={'col-12 row mx-auto px-0'}>
+                                    <Form.Group className={'col-12 col-sm-6'} controlId={'imfFirstName'}>
+                                        <Form.Label className={'mtb-hp-text1'} style={{
+                                            fontWeight: 400
+                                        }}>
+                                            First name
+                                        </Form.Label>
+                                        <InputGroup className="py-1 px-2 mtb-hp-membership-textfield">
+
+                                            <Form.Control autoComplete={'on'} className={'border-0 outline-0 ps-1'} type="text" onChange={(e) => {
+                                                this.setState({
+                                                    individualMembershipForm: {
+                                                        ...this.state.individualMembershipForm,
+                                                        firstName: e.target.value
+                                                    }
+                                                });
+                                            }} />
+                                        </InputGroup>
+                                    </Form.Group>
+                                    <Form.Group className={'col-12 col-sm-6'} controlId={'imfLastName'}>
+                                        <Form.Label className={'mtb-hp-text1'} style={{
+                                            fontWeight: 400
+                                        }}>
+                                            Last name
+                                        </Form.Label>
+                                        <InputGroup className="py-1 px-2 mtb-hp-membership-textfield">
+
+                                            <Form.Control autoComplete={'on'} className={'border-0 outline-0 ps-1'} type="text" onChange={(e) => {
+                                                this.setState({
+                                                    individualMembershipForm: {
+                                                        ...this.state.individualMembershipForm,
+                                                        lastName: e.target.value
+                                                    }
+                                                });
+                                            }} />
+                                        </InputGroup>
+                                    </Form.Group>
+                                    <Form.Group className={'col-12 col-sm-6'} controlId={'imfBirthdate'}>
+                                        <Form.Label className={'mtb-hp-text1'} style={{
+                                            fontWeight: 400
+                                        }}>
+                                            Birthdate
+                                        </Form.Label>
+                                        <InputGroup className="py-1 px-2 mtb-hp-contactform-textfield">
+                                        <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                            <MobileDatePicker
+                                                inputFormat={'dd/mm/yyyy'}
+                                                label={'Birthdate'}
+                                                value={this.state.individualMembershipForm.birthdate}
+                                                onChange={(newValue) => {
+                                                    // Use dd/mm/yyyy format
+                                                    let formatDate = moment(newValue).format("DD/MM/YYYY");
+                                                    this.setState({
+                                                        individualMembershipForm: {
+                                                            ...this.state.individualMembershipForm,
+                                                            birthdate: formatDate
+                                                        }
+                                                    });
+                                                }}
+                                                renderInput={({ inputRef, inputProps, InputProps }) => (
+                                                <>
+                                                    <InputGroup.Text className={'border-0'} style={{
+                                                        background: 'transparent',
+                                                        cursor: 'pointer',
+                                                        marginLeft: -20
+                                                    }}>
+                                                        {InputProps?.endAdornment}
+                                                    </InputGroup.Text>
+                                                    <Form.Control ref={inputRef} {...inputProps} autoComplete={'on'} className={'border-0 outline-0 ps-1'} type="text" value={this.state.individualMembershipForm.birthdate} onChange={(e) => {
+                                                        this.setState({
+                                                            individualMembershipForm: {
+                                                                ...this.state.individualMembershipForm,
+                                                                birthdate: e.target.value
+                                                            }
+                                                        });
+                                                    }} />
+                                                </>
+                                                )}
+                                            />
+                                        </LocalizationProvider>
+                                            
+                                        </InputGroup>
+                                    </Form.Group>
+                                    <Form.Group className={'col-12 col-sm-6'} controlId={'imfEmail'}>
+                                        <Form.Label className={'mtb-hp-text1'} style={{
+                                            fontWeight: 400
+                                        }}>
+                                            Email
+                                        </Form.Label>
+                                        <InputGroup className="py-1 px-2 mtb-hp-membership-textfield">
+                                            <InputGroup.Text className={'border-0'} style={{
+                                                background: 'transparent',
+                                                cursor: 'pointer'
+                                            }}>
+                                                <MailIcon />
+                                            </InputGroup.Text>
+                                            <Form.Control type={'email'} autoComplete={'on'} className={'border-0 outline-0 ps-1'} onChange={(e) => {
+                                                this.setState({
+                                                    individualMembershipForm: {
+                                                        ...this.state.individualMembershipForm,
+                                                        emailAddress: e.target.value
+                                                    }
+                                                });
+                                            }} />
+                                        </InputGroup>
+                                    </Form.Group>
+                                    
+                                    <Form.Group className={'col-12 col-sm-6'} controlId={'imfCountry'}>
+                                        <Form.Label className={'mtb-hp-text1'} style={{
+                                            fontWeight: 400
+                                        }}>
+                                            Country
+                                        </Form.Label>
+                                        <InputGroup className={'py-1 px-2 mtb-hp-membership-textfield'}>
+                                            <InputGroup.Text className={'border-0'} style={{
+                                                background: 'transparent',
+                                                cursor: 'pointer'
+                                            }}>
+                                                {this.state.individualMembershipForm.countryCode ? 
+                                                <img src={"https://assets.morethanbefore.com.au/country-flags/" + this.state.individualMembershipForm.countryCode + ".svg"} width={25} height={25} />
+                                                : ''}
+                                            </InputGroup.Text>
+                                            <Form.Control autoComplete={'on'} as={'select'} onChange={(e) => {
+                                                console.log(e.target.value);
+                                                this.setState({
+                                                    individualMembershipForm: {
+                                                        ...this.state.individualMembershipForm,
+                                                        countryCode: e.target.value
+                                                    },
+                                                });
+                                            }} className={'border-0 outline-0 ps-1'}>
+                                                <option></option>
+                                                {this.state.countries ?
+                                                (this.state.countries.map((d,index) => {
+                                                    const flagImage = d.code != null ? "https://assets.morethanbefore.com.au/country-flags/" + d.code.toLowerCase() + '.svg' : '';
+                                                    return (
+                                                        <option value={d?.code}>
+                                                            
+                                                            {d?.name}
+                                                        </option>
+                                                    );
+                                                }))
+                                                : ''}
+                                                
+                                            </Form.Control>
+                                        </InputGroup>
+                                        
+                                    </Form.Group>
+                                    <Form.Group className={'col-12 col-sm-6'} controlId={'imfCity'}>
+                                        <Form.Label className={'mtb-hp-text1'} style={{
+                                            fontWeight: 400
+                                        }}>
+                                            City
+                                        </Form.Label>
+                                        <InputGroup className="py-2 px-2 mtb-hp-membership-textfield">
+
+                                            <Form.Control autoComplete={'on'} className={'border-0 outline-0 ps-1'} type="text" onChange={(e) => {
+                                                this.setState({
+                                                    individualMembershipForm: {
+                                                        ...this.state.individualMembershipForm,
+                                                        city: e.target.value
+                                                    }
+                                                });
+                                            }} />
+                                        </InputGroup>
+                                    </Form.Group>
+                                    <Form.Group className={'col-12 col-sm-12'} controlId={'imfStreetAddress'}>
+                                        <Form.Label className={'mtb-hp-text1'} style={{
+                                            fontWeight: 400
+                                        }}>
+                                            Street Address
+                                        </Form.Label>
+                                        <InputGroup className="py-1 px-2 mtb-hp-membership-textfield">
+
+                                            <Form.Control autoComplete={'on'} className={'border-0 outline-0 ps-1'} type="text" onChange={(e) => {
+                                                this.setState({
+                                                    individualMembershipForm: {
+                                                        ...this.state.individualMembershipForm,
+                                                        streetAddress: e.target.value
+                                                    }
+                                                });
+                                            }} />
+                                        </InputGroup>
+                                    </Form.Group>
+                                    
+                                    <Form.Group className={'col-12 col-sm-6'} controlId={'imfState'}>
+                                        <Form.Label className={'mtb-hp-text1'} style={{
+                                            fontWeight: 400
+                                        }}>
+                                            State
+                                        </Form.Label>
+                                        <InputGroup className="py-1 px-2 mtb-hp-membership-textfield">
+
+                                            <Form.Control autoComplete={'on'} className={'border-0 outline-0 ps-1'} type="text" onChange={(e) => {
+                                                this.setState({
+                                                    individualMembershipForm: {
+                                                        ...this.state.individualMembershipForm,
+                                                        state: e.target.value
+                                                    }
+                                                });
+                                            }} />
+                                        </InputGroup>
+                                    </Form.Group>
+                                    <Form.Group className={'col-12 col-sm-6'} controlId={'imfZipCode'}>
+                                        <Form.Label className={'mtb-hp-text1'} style={{
+                                            fontWeight: 400
+                                        }}>
+                                            Zip code
+                                        </Form.Label>
+                                        <InputGroup className="py-1 px-2 mtb-hp-membership-textfield">
+
+                                            <Form.Control autoComplete={'on'} className={'border-0 outline-0 ps-1'} type="text" onChange={(e) => {
+                                                this.setState({
+                                                    individualMembershipForm: {
+                                                        ...this.state.individualMembershipForm,
+                                                        zipCode: e.target.value
+                                                    }
+                                                });
+                                            }} />
+                                        </InputGroup>
+                                    </Form.Group>
+                                    <div className={'mt-3 col-12 d-grid d-block'}>
+                                        <button type={'button'} className={'btn mtb-button mtb-button-border-radius py-3'} style={{
+                                            fontWeight: 600,
+                                            fontSize: '100%'
+                                        }} onClick={() => {
+                                            let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                                            if (re.test(this.state.individualMembershipForm.emailAddress ?? "")) {
+                                                // Further Validation
+                                                const orderCount : number = (this.state.orderContext?.orderDetails?.length ?? 0);
+                                                const minimumQuantity : number = (this.state.selectedProductModal?.product?.minQuantity ?? 0);
+                                                const maximumQuantity : number = (this.state.selectedProductModal?.product?.maxQuantity ?? 0);
+                                                const remainingSeats : number = (this.state.selectedProductModal?.counter?.remainingEventSeat ?? 0);
+                                                
+                                                // Validations
+                                                let maximumQuantityValidationState : boolean = false;
+                                                let minimumQuantityValidationState : boolean = false;
+                                                let remainingSeatValidationState : boolean = false;
+                                                
+                                                if (remainingSeats >= orderCount) {
+                                                    remainingSeatValidationState = true;
+                                                }
+
+                                                if (!remainingSeatValidationState) {
+                                                    this.setState({
+                                                        productModalOpenState: false,
+                                                        individualFullCapacityModal: true
+                                                    })
+                                                }
+
+                                                if (remainingSeatValidationState) {
+                                                    this.setState({
+                                                        paymentSelectionModal: true,
+                                                        productModalOpenState: false,
+                                                        orderContext: {
+                                                            promoCode: this.state.selectedProductModal?.product?.promoCode,
+                                                            orderDetails: [this.state.individualMembershipForm]
+                                                        }
+                                                    });
+                                                }
+
+                                                
+                                            } else {
+                                                // Invalid Email Address
+                                                alert("Invalid Email Address");
+                                            }
+                                        }}>
+                                            Proceed to Checkout
+                                            <FaArrowRight style={{
+                                                marginLeft: 10
+                                            }} />
+                                        </button>
+                                    </div>
+                                </Form>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                </>
+
+                {/** Dialog/Modal for Selected Product */}
+                <>
+                    <Dialog
+                        fullWidth={true}
+                        maxWidth={(this.state.selectedProductModal?.product?.minQuantity ?? 0) <= 1 ? 'sm' : 'lg'}
+                        open={this.state.productModalOpenState}
+                        onClose={() => {
+                            this.setState({
+                                productModalOpenState: false,
+                                individualMembershipForm: {
+                                    firstName: undefined,
+                                    middleName: undefined,
+                                    lastName: undefined,
+                                    emailAddress: undefined,
+                                    birthdate: null,
+                                    countryCode: null,
+                                    streetAddress: undefined,
+                                    city: undefined,
+                                    state: null,
+                                    zipCode: null
+                    
+                                }
+                            });
+                        }}
+                        PaperProps={{
+                            style: {
+                                borderRadius: 10,
+                                padding: "10px"
+                            }
+                        }}
+                    >
+                        <DialogContent>
+                            {(this.state.selectedProductModal?.product?.minQuantity ?? 0) <= 1 ? (
+                                <div className={'row mx-0'} style={{
+                                    width: '100%'
+                                }}>
+                                    <div className={'col-6'}>
+                                        <img src={Logo} width={'auto'} height={'40px'} />
+                                    </div>
+                                    <div className={'col-6 text-end'}>
+                                        <span onClick={() => {
+                                            this.setState({
+                                                productModalOpenState: false
+                                            })
+                                        }} style={{
+                                            cursor: 'pointer'
+                                        }}>
+                                            <FaTimes />
+                                        </span>
+                                    </div>
+                                    <div className={'col-12 my-4'}>
+                                        <h1 className={'mtb-hp-title'}>
+                                            Individual <span className={'mtb-text-color-primary'}>Membership</span>
+                                        </h1>
+                                        <span className={'mtb-hp-text1'}>Register to become a part of our event.</span>
+                                    </div>
+                                    <Form className={'col-12 row mx-auto px-0'}>
+                                        <Form.Group className={'col-12 col-sm-6'} controlId={'imfFirstName'}>
+                                            <Form.Label className={'mtb-hp-text1'} style={{
+                                                fontWeight: 400
+                                            }}>
+                                                First name
+                                            </Form.Label>
+                                            <InputGroup className="py-1 px-2 mtb-hp-membership-textfield">
+
+                                                <Form.Control autoComplete={'on'} className={'border-0 outline-0 ps-1'} type="text" onChange={(e) => {
+                                                    this.setState({
+                                                        individualMembershipForm: {
+                                                            ...this.state.individualMembershipForm,
+                                                            firstName: e.target.value
+                                                        }
+                                                    });
+                                                }} />
+                                            </InputGroup>
+                                        </Form.Group>
+                                        <Form.Group className={'col-12 col-sm-6'} controlId={'imfLastName'}>
+                                            <Form.Label className={'mtb-hp-text1'} style={{
+                                                fontWeight: 400
+                                            }}>
+                                                Last name
+                                            </Form.Label>
+                                            <InputGroup className="py-1 px-2 mtb-hp-membership-textfield">
+
+                                                <Form.Control autoComplete={'on'} className={'border-0 outline-0 ps-1'} type="text" onChange={(e) => {
+                                                    this.setState({
+                                                        individualMembershipForm: {
+                                                            ...this.state.individualMembershipForm,
+                                                            lastName: e.target.value
+                                                        }
+                                                    });
+                                                }} />
+                                            </InputGroup>
+                                        </Form.Group>
+                                        <Form.Group className={'col-12 col-sm-6'} controlId={'imfBirthdate'}>
+                                            <Form.Label className={'mtb-hp-text1'} style={{
+                                                fontWeight: 400
+                                            }}>
+                                                Birthdate
+                                            </Form.Label>
+                                            <InputGroup className="py-1 px-2 mtb-hp-contactform-textfield">
+                                            <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                                <MobileDatePicker
+                                                    inputFormat={'MM/dd/yyyy'}
+                                                    label={'Birthdate'}
+                                                    value={this.state.individualMembershipForm.birthdate}
+                                                    onChange={(newValue) => {
+                                                        // Use dd/mm/yyyy format
+                                                        let formatDate = moment(newValue).format("DD/MM/YYYY");
+
+                                                        this.setState({
+                                                            individualMembershipForm: {
+                                                                ...this.state.individualMembershipForm,
+                                                                birthdate: formatDate
+                                                            }
+                                                        });
+                                                    }}
+                                                    renderInput={({ inputRef, inputProps, InputProps }) => (
+                                                    <>
+                                                        <InputGroup.Text className={'border-0'} style={{
+                                                            background: 'transparent',
+                                                            cursor: 'pointer',
+                                                            marginLeft: -20
+                                                        }}>
+                                                            {InputProps?.endAdornment}
+                                                        </InputGroup.Text>
+                                                        <Form.Control ref={inputRef} {...inputProps} autoComplete={'on'} className={'border-0 outline-0 ps-1'} type="text" value={this.state.individualMembershipForm.birthdate} onChange={(e) => {
+                                                            this.setState({
+                                                                individualMembershipForm: {
+                                                                    ...this.state.individualMembershipForm,
+                                                                    birthdate: e.target.value
+                                                                }
+                                                            });
+                                                        }} />
+                                                    </>
+                                                    )}
+                                                />
+                                            </LocalizationProvider>
+                                                
+                                            </InputGroup>
+                                        </Form.Group>
+                                        <Form.Group className={'col-12 col-sm-6'} controlId={'imfEmail'}>
+                                            <Form.Label className={'mtb-hp-text1'} style={{
+                                                fontWeight: 400
+                                            }}>
+                                                Email
+                                            </Form.Label>
+                                            <InputGroup className="py-1 px-2 mtb-hp-membership-textfield">
+                                                <InputGroup.Text className={'border-0'} style={{
+                                                    background: 'transparent',
+                                                    cursor: 'pointer'
+                                                }}>
+                                                    <MailIcon />
+                                                </InputGroup.Text>
+                                                <Form.Control type={'email'} autoComplete={'on'} className={'border-0 outline-0 ps-1'} onChange={(e) => {
+                                                    this.setState({
+                                                        individualMembershipForm: {
+                                                            ...this.state.individualMembershipForm,
+                                                            emailAddress: e.target.value
+                                                        }
+                                                    });
+                                                }} />
+                                            </InputGroup>
+                                        </Form.Group>
+                                        
+                                        <Form.Group className={'col-12 col-sm-6'} controlId={'imfCountry'}>
+                                            <Form.Label className={'mtb-hp-text1'} style={{
+                                                fontWeight: 400
+                                            }}>
+                                                Country
+                                            </Form.Label>
+                                            <InputGroup className={'py-1 px-2 mtb-hp-membership-textfield'}>
+                                                <InputGroup.Text className={'border-0'} style={{
+                                                    background: 'transparent',
+                                                    cursor: 'pointer'
+                                                }}>
+                                                    {this.state.individualMembershipForm.countryCode ? 
+                                                    <img src={"https://assets.morethanbefore.com.au/country-flags/" + this.state.individualMembershipForm.countryCode + ".svg"} width={25} height={25} />
+                                                    : ''}
+                                                </InputGroup.Text>
+                                                <Form.Control autoComplete={'on'} as={'select'} onChange={(e) => {
+                                                    console.log(e.target.value);
+                                                    this.setState({
+                                                        individualMembershipForm: {
+                                                            ...this.state.individualMembershipForm,
+                                                            countryCode: e.target.value
+                                                        },
+                                                    });
+                                                }} className={'border-0 outline-0 ps-1'}>
+                                                    <option></option>
+                                                    {this.state.countries ?
+                                                    (this.state.countries.map((d,index) => {
+                                                        const flagImage = d.code != null ? "https://assets.morethanbefore.com.au/country-flags/" + d.code.toLowerCase() + '.svg' : '';
+                                                        return (
+                                                            <option value={d?.code}>
+                                                                
+                                                                {d?.name}
+                                                            </option>
+                                                        );
+                                                    }))
+                                                    : ''}
+                                                    
+                                                </Form.Control>
+                                            </InputGroup>
+                                            
+                                        </Form.Group>
+                                        <Form.Group className={'col-12 col-sm-6'} controlId={'imfCity'}>
+                                            <Form.Label className={'mtb-hp-text1'} style={{
+                                                fontWeight: 400
+                                            }}>
+                                                City
+                                            </Form.Label>
+                                            <InputGroup className="py-2 px-2 mtb-hp-membership-textfield">
+
+                                                <Form.Control autoComplete={'on'} className={'border-0 outline-0 ps-1'} type="text" onChange={(e) => {
+                                                    this.setState({
+                                                        individualMembershipForm: {
+                                                            ...this.state.individualMembershipForm,
+                                                            city: e.target.value
+                                                        }
+                                                    });
+                                                }} />
+                                            </InputGroup>
+                                        </Form.Group>
+                                        <Form.Group className={'col-12 col-sm-12'} controlId={'imfStreetAddress'}>
+                                            <Form.Label className={'mtb-hp-text1'} style={{
+                                                fontWeight: 400
+                                            }}>
+                                                Street Address
+                                            </Form.Label>
+                                            <InputGroup className="py-1 px-2 mtb-hp-membership-textfield">
+
+                                                <Form.Control autoComplete={'on'} className={'border-0 outline-0 ps-1'} type="text" onChange={(e) => {
+                                                    this.setState({
+                                                        individualMembershipForm: {
+                                                            ...this.state.individualMembershipForm,
+                                                            streetAddress: e.target.value
+                                                        }
+                                                    });
+                                                }} />
+                                            </InputGroup>
+                                        </Form.Group>
+                                        
+                                        <Form.Group className={'col-12 col-sm-6'} controlId={'imfState'}>
+                                            <Form.Label className={'mtb-hp-text1'} style={{
+                                                fontWeight: 400
+                                            }}>
+                                                State
+                                            </Form.Label>
+                                            <InputGroup className="py-1 px-2 mtb-hp-membership-textfield">
+
+                                                <Form.Control autoComplete={'on'} className={'border-0 outline-0 ps-1'} type="text" onChange={(e) => {
+                                                    this.setState({
+                                                        individualMembershipForm: {
+                                                            ...this.state.individualMembershipForm,
+                                                            state: e.target.value
+                                                        }
+                                                    });
+                                                }} />
+                                            </InputGroup>
+                                        </Form.Group>
+                                        <Form.Group className={'col-12 col-sm-6'} controlId={'imfZipCode'}>
+                                            <Form.Label className={'mtb-hp-text1'} style={{
+                                                fontWeight: 400
+                                            }}>
+                                                Zip code
+                                            </Form.Label>
+                                            <InputGroup className="py-1 px-2 mtb-hp-membership-textfield">
+
+                                                <Form.Control autoComplete={'on'} className={'border-0 outline-0 ps-1'} type="text" onChange={(e) => {
+                                                    this.setState({
+                                                        individualMembershipForm: {
+                                                            ...this.state.individualMembershipForm,
+                                                            zipCode: e.target.value
+                                                        }
+                                                    });
+                                                }} />
+                                            </InputGroup>
+                                        </Form.Group>
+                                        <div className={'mt-3 col-12 d-grid d-block'}>
+                                            <button type={'button'} className={'btn mtb-button mtb-button-border-radius py-3'} style={{
+                                                fontWeight: 600,
+                                                fontSize: '100%'
+                                            }} onClick={() => {
+                                                let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                                                if (re.test(this.state.individualMembershipForm.emailAddress ?? "")) {
+                                                    // Further Validation
+                                                    const orderCount : number = (this.state.orderContext?.orderDetails?.length ?? 0);
+                                                    const minimumQuantity : number = (this.state.selectedProductModal?.product?.minQuantity ?? 0);
+                                                    const maximumQuantity : number = (this.state.selectedProductModal?.product?.maxQuantity ?? 0);
+                                                    const remainingSeats : number = (this.state.selectedProductModal?.counter?.remainingEventSeat ?? 0);
+                                                    
+                                                    // Validations
+                                                    let maximumQuantityValidationState : boolean = false;
+                                                    let minimumQuantityValidationState : boolean = false;
+                                                    let remainingSeatValidationState : boolean = false;
+
+                                                    if (remainingSeats >= orderCount) {
+                                                        remainingSeatValidationState = true;
+                                                    }
+
+                                                    if (!remainingSeatValidationState) {
+                                                        this.setState({
+                                                            productModalOpenState: false,
+                                                            individualFullCapacityModal: true
+                                                        })
+                                                    }
+
+                                                    if (remainingSeatValidationState) {
+                                                        this.setState({
+                                                            paymentSelectionModal: true,
+                                                            productModalOpenState: false,
+                                                            orderContext: {
+                                                                promoCode: this.state.selectedProductModal?.product?.promoCode,
+                                                                orderDetails: [this.state.individualMembershipForm]
+                                                            }
+                                                        });
+                                                    }
+                                                    
+                                                } else {
+                                                    // Invalid Email Address
+                                                    alert("Invalid Email Address");
+                                                }
+                                            }}>
+                                                Proceed to Checkout
+                                                <FaArrowRight style={{
+                                                    marginLeft: 10
+                                                }} />
+                                            </button>
+                                        </div>
+                                    </Form>
+                                </div>
+                            ) : (
+                                <div className={'row mx-0 d-flex align-items-start'} style={{
+                                    width: '100%'
+                                }}>
+                                    <div className={'col-12 col-md-6 row mx-0 px-0'}>
+                                        <div className={'col-6'}>
+                                            <img src={Logo} width={'auto'} height={'40px'} />
+                                        </div>
+                                        <div className={'col-6'}></div>
+                                        <div className={'col-12 my-4'}>
+                                            <h1 className={'mtb-hp-title'}>
+                                                Group <span className={'mtb-text-color-primary'}>Membership</span>
+                                            </h1>
+                                            <span className={'mtb-hp-text1'}>Register to become a part of our event.</span>
+                                            
+                                        </div>
+                                        <Form className={'col-12 row mx-auto px-0'}>
+                                            <Form.Group className={'col-12 col-sm-6'} controlId={'imfFirstName'}>
+                                                <Form.Label className={'mtb-hp-text1'} style={{
+                                                    fontWeight: 400
+                                                }}>
+                                                    First name
+                                                </Form.Label>
+                                                <InputGroup className="py-1 px-2 mtb-hp-membership-textfield">
+
+                                                    <Form.Control autoComplete={'on'} className={'border-0 outline-0 ps-1'} type="text" onChange={(e) => {
+                                                        this.setState({
+                                                            groupMembershipForm: {
+                                                                ...this.state.groupMembershipForm,
+                                                                firstName: e.target.value
+                                                            }
+                                                        });
+                                                    }} />
+                                                </InputGroup>
+                                            </Form.Group>
+                                            <Form.Group className={'col-12 col-sm-6'} controlId={'imfLastName'}>
+                                                <Form.Label className={'mtb-hp-text1'} style={{
+                                                    fontWeight: 400
+                                                }}>
+                                                    Last name
+                                                </Form.Label>
+                                                <InputGroup className="py-1 px-2 mtb-hp-membership-textfield">
+
+                                                    <Form.Control autoComplete={'on'} className={'border-0 outline-0 ps-1'} type="text" onChange={(e) => {
+                                                        this.setState({
+                                                            groupMembershipForm: {
+                                                                ...this.state.groupMembershipForm,
+                                                                lastName: e.target.value
+                                                            }
+                                                        });
+                                                    }} />
+                                                </InputGroup>
+                                            </Form.Group>
+                                            <Form.Group className={'col-12 col-sm-6'} controlId={'imfBirthdate'}>
+                                                <Form.Label className={'mtb-hp-text1'} style={{
+                                                    fontWeight: 400
+                                                }}>
+                                                    Birthdate
+                                                </Form.Label>
+                                                <InputGroup className="py-1 px-2 mtb-hp-contactform-textfield">
+                                                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                                                    <MobileDatePicker
+                                                        inputFormat={'MM/dd/yyyy'}
+                                                        label={'Birthdate'}
+                                                        value={this.state.groupMembershipForm.birthdate}
+                                                        onChange={(newValue) => {
+                                                            // Use dd/mm/yyyy format
+                                                            let formatDate = moment(newValue).format("DD/MM/YYYY");
+                                                            
+                                                            this.setState({
+                                                                groupMembershipForm: {
+                                                                    ...this.state.groupMembershipForm,
+                                                                    birthdate: formatDate
+                                                                }
+                                                            });
+                                                        }}
+                                                        renderInput={({ inputRef, inputProps, InputProps }) => (
+                                                        <>
+                                                            <InputGroup.Text className={'border-0'} style={{
+                                                                background: 'transparent',
+                                                                cursor: 'pointer',
+                                                                marginLeft: -20
+                                                            }}>
+                                                                {InputProps?.endAdornment}
+                                                            </InputGroup.Text>
+                                                            <Form.Control ref={inputRef} {...inputProps} autoComplete={'on'} className={'border-0 outline-0 ps-1'} type="text" value={this.state.groupMembershipForm.birthdate} onChange={(e) => {
+                                                                this.setState({
+                                                                    groupMembershipForm: {
+                                                                        ...this.state.groupMembershipForm,
+                                                                        birthdate: e.target.value
+                                                                    }
+                                                                });
+                                                            }} />
+                                                        </>
+                                                        )}
+                                                    />
+                                                </LocalizationProvider>
+                                                    
+                                                </InputGroup>
+                                            </Form.Group>
+                                            <Form.Group className={'col-12 col-sm-6'} controlId={'imfEmail'}>
+                                                <Form.Label className={'mtb-hp-text1'} style={{
+                                                    fontWeight: 400
+                                                }}>
+                                                    Email
+                                                </Form.Label>
+                                                <InputGroup className="py-1 px-2 mtb-hp-membership-textfield">
+                                                    <InputGroup.Text className={'border-0'} style={{
+                                                        background: 'transparent',
+                                                        cursor: 'pointer'
+                                                    }}>
+                                                        <MailIcon />
+                                                    </InputGroup.Text>
+                                                    <Form.Control type={'email'} autoComplete={'on'} className={'border-0 outline-0 ps-1'} onChange={(e) => {
+                                                        this.setState({
+                                                            groupMembershipForm: {
+                                                                ...this.state.groupMembershipForm,
+                                                                emailAddress: e.target.value
+                                                            }
+                                                        });
+                                                    }} />
+                                                </InputGroup>
+                                            </Form.Group>
+                                            
+                                            <Form.Group className={'col-12 col-sm-6'} controlId={'imfCountry'}>
+                                                <Form.Label className={'mtb-hp-text1'} style={{
+                                                    fontWeight: 400
+                                                }}>
+                                                    Country
+                                                </Form.Label>
+                                                <InputGroup className={'py-1 px-2 mtb-hp-membership-textfield'}>
+                                                    <InputGroup.Text className={'border-0'} style={{
+                                                        background: 'transparent',
+                                                        cursor: 'pointer'
+                                                    }}>
+                                                        {this.state.groupMembershipForm.countryCode ? 
+                                                        <img src={"https://assets.morethanbefore.com.au/country-flags/" + this.state.individualMembershipForm.countryCode + ".svg"} width={25} height={25} />
+                                                        : ''}
+                                                    </InputGroup.Text>
+                                                    <Form.Control autoComplete={'on'} as={'select'} onChange={(e) => {
+                                                        console.log(e.target.value);
+                                                        this.setState({
+                                                            groupMembershipForm: {
+                                                                ...this.state.groupMembershipForm,
+                                                                countryCode: e.target.value
+                                                            },
+                                                        });
+                                                    }} className={'border-0 outline-0 ps-1'}>
+                                                        <option></option>
+                                                        {this.state.countries ?
+                                                        (this.state.countries.map((d,index) => {
+                                                            const flagImage = d.code != null ? "https://assets.morethanbefore.com.au/country-flags/" + d.code.toLowerCase() + '.svg' : '';
+                                                            return (
+                                                                <option value={d?.code}>
+                                                                    
+                                                                    {d?.name}
+                                                                </option>
+                                                            );
+                                                        }))
+                                                        : ''}
+                                                        
+                                                    </Form.Control>
+                                                </InputGroup>
+                                                
+                                            </Form.Group>
+                                            <Form.Group className={'col-12 col-sm-6'} controlId={'imfCity'}>
+                                                <Form.Label className={'mtb-hp-text1'} style={{
+                                                    fontWeight: 400
+                                                }}>
+                                                    City
+                                                </Form.Label>
+                                                <InputGroup className="py-2 px-2 mtb-hp-membership-textfield">
+
+                                                    <Form.Control autoComplete={'on'} className={'border-0 outline-0 ps-1'} type="text" onChange={(e) => {
+                                                        this.setState({
+                                                            groupMembershipForm: {
+                                                                ...this.state.groupMembershipForm,
+                                                                city: e.target.value
+                                                            }
+                                                        });
+                                                    }} />
+                                                </InputGroup>
+                                            </Form.Group>
+                                            <Form.Group className={'col-12 col-sm-12'} controlId={'imfStreetAddress'}>
+                                                <Form.Label className={'mtb-hp-text1'} style={{
+                                                    fontWeight: 400
+                                                }}>
+                                                    Street Address
+                                                </Form.Label>
+                                                <InputGroup className="py-1 px-2 mtb-hp-membership-textfield">
+
+                                                    <Form.Control autoComplete={'on'} className={'border-0 outline-0 ps-1'} type="text" onChange={(e) => {
+                                                        this.setState({
+                                                            groupMembershipForm: {
+                                                                ...this.state.groupMembershipForm,
+                                                                streetAddress: e.target.value
+                                                            }
+                                                        });
+                                                    }} />
+                                                </InputGroup>
+                                            </Form.Group>
+                                            
+                                            <Form.Group className={'col-12 col-sm-6'} controlId={'imfState'}>
+                                                <Form.Label className={'mtb-hp-text1'} style={{
+                                                    fontWeight: 400
+                                                }}>
+                                                    State
+                                                </Form.Label>
+                                                <InputGroup className="py-1 px-2 mtb-hp-membership-textfield">
+
+                                                    <Form.Control autoComplete={'on'} className={'border-0 outline-0 ps-1'} type="text" onChange={(e) => {
+                                                        this.setState({
+                                                            groupMembershipForm: {
+                                                                ...this.state.groupMembershipForm,
+                                                                state: e.target.value
+                                                            }
+                                                        });
+                                                    }} />
+                                                </InputGroup>
+                                            </Form.Group>
+                                            <Form.Group className={'col-12 col-sm-6'} controlId={'imfZipCode'}>
+                                                <Form.Label className={'mtb-hp-text1'} style={{
+                                                    fontWeight: 400
+                                                }}>
+                                                    Zip code
+                                                </Form.Label>
+                                                <InputGroup className="py-1 px-2 mtb-hp-membership-textfield">
+
+                                                    <Form.Control autoComplete={'on'} className={'border-0 outline-0 ps-1'} type="text" onChange={(e) => {
+                                                        this.setState({
+                                                            groupMembershipForm: {
+                                                                ...this.state.groupMembershipForm,
+                                                                zipCode: e.target.value
+                                                            }
+                                                        });
+                                                    }} />
+                                                </InputGroup>
+                                            </Form.Group>
+                                            <div className={'mt-3 col-12 d-grid d-block'}>
+                                                <button type={'button'} className={'btn mtb-button mtb-button-border-radius py-3'} style={{
+                                                    fontWeight: 600,
+                                                    fontSize: '100%'
+                                                }} onClick={() => {
+                                                    let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                                                    
+                                                    
+
+                                                    if (re.test(this.state.groupMembershipForm.emailAddress ?? "")) {
+                                                        if (this.handleCheckEmailDuplicate(this.state.groupMembershipForm.emailAddress ?? "")) {
+                                                            alert("Email " + this.state.groupMembershipForm.emailAddress + " had already exist.");
+                                                        } else {
+                                                            console.log("Email ok");
+                                                            this.setState(prevState => ({
+                                                                orderContext: {
+                                                                    promoCode: this.state.selectedProductModal?.product?.promoCode,
+                                                                    orderDetails: [...(prevState.orderContext?.orderDetails ?? []), this.state.groupMembershipForm]
+                                                                }
+                                                            }));
+                                                        }
+                                                        
+                                                       
+
+                                                    } else {
+                                                        // Invalid Email Address
+                                                        alert("Invalid Email Address");
+                                                    }
+                                                }}>
+                                                    Add Member
+                                                    <FaPlus style={{
+                                                        marginLeft: 10
+                                                    }} />
+                                                </button>
+                                            </div>
+                                        </Form>
+                                    </div>
+                                    <div className={'col-12 col-md-6 row mx-0 px-0 d-flex align-items-start'}>
+                                        <div className={'col-6 my-3'}></div>
+                                        <div className={'col-6 my-3 text-end'}>
+                                            <span onClick={() => {
+                                                this.setState({
+                                                    productModalOpenState: false
+                                                })
+                                            }} style={{
+                                                cursor: 'pointer'
+                                            }}>
+                                                <FaTimes />
+                                            </span>
+                                        </div>
+                                        <div className={'col-12 my-4'}>
+                                            <h1 className={'mtb-hp-title'}>
+                                                Group <span className={'mtb-text-color-primary'}>Members</span>
+                                                
+                                            </h1>
+                                        </div>
+
+                                        <div className={'col-12 my-0'}>
+                                                {(this.state.orderContext?.orderDetails !== null ?
+                                                (<ul className="list-group list-group-flush">
+                                                    {this.state.orderContext?.orderDetails?.map((data, idx) => {
+                                                        const index_nbr = idx + 1;
+                                                        console.log(index_nbr);
+                                                        console.log(this.state.orderContext);
+                                                        return (data?.emailAddress !== undefined ? (
+                                                            <li className="list-group-item d-block d-md-flex justify-content-between align-items-center">
+                                                                <div className="ms-0">
+                                                                    <div className="mtb-cartordergroup-text-title" style={{
+                                                                        fontSize: '90%'
+                                                                    }}>
+                                                                        #{index_nbr}
+                                                                    </div>
+                                                                </div>
+                                                                <div className="ms-0 ms-md-3">
+                                                                    <div className="mtb-cartordergroup-text-title">
+                                                                        {data?.firstName} {data?.lastName}
+                                                                    </div>
+                                                                    <span className={'mtb-cartordergroup-text-sub'}>Member</span>
+                                                                </div>
+                                                                <div className="ms-0 ms-md-3 me-auto">
+                                                                    <div className="mtb-cartordergroup-text-title">
+                                                                        {data?.emailAddress}
+                                                                    </div>
+                                                                    <span className={'mtb-cartordergroup-text-sub'}>Email Address</span>
+                                                                </div>
+                                                                <span onClick={() => {
+                                                                    if ((this.state.orderContext?.orderDetails?.length ?? 0) >= 2) {
+                                                                        if (idx !== -1) {
+                                                                            let orderArray = (this.state.orderContext?.orderDetails ?? []);
+                                                                            orderArray.splice(idx, 1);
+                                                                            this.setState({
+                                                                                orderContext: {
+                                                                                    promoCode: this.state.selectedProductModal?.product?.promoCode,
+                                                                                    orderDetails: orderArray
+                                                                                }
+                                                                            });
+                                                                        }
+                                                                        
+                                                                    } else {
+                                                                        this.setState({
+                                                                            orderContext: {
+                                                                                promoCode: this.state.selectedProductModal?.product?.promoCode,
+                                                                                orderDetails: []
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                    
+                                                                }} style={{
+                                                                    cursor: 'pointer',
+                                                                    color: '#F24F37'
+                                                                }}>
+                                                                    <FaTrashAlt />
+                                                                </span>
+                                                            </li>
+                                                        ) : '');
+                                                    })}
+                                                </ul>)
+                                                :
+                                                '')}
+
+                                                {(this.state.orderContext?.orderDetails?.length == 0 ? (<span className={'mtb-cartordergroup-text-sub'}>No added members.</span>) : 
+                                                (
+                                                    <>
+                                                        <div className={'d-grid d-block mt-3'}>
+                                                            <button type={'button'} onClick={() => {
+                                                                console.log(this.state.selectedProductModal);
+                                                                console.log(this.state.orderContext?.orderDetails?.length ?? 0);
+                                                                console.log((this.state.selectedProductModal?.product?.minQuantity ?? 0));
+
+                                                                console.log(this.state.orderContext?.orderDetails);
+
+                                                                const orderCount : number = (this.state.orderContext?.orderDetails?.length ?? 0);
+                                                                const minimumQuantity : number = (this.state.selectedProductModal?.product?.minQuantity ?? 0);
+                                                                const maximumQuantity : number = (this.state.selectedProductModal?.product?.maxQuantity ?? 0);
+                                                                const remainingSeats : number = (this.state.selectedProductModal?.counter?.remainingEventSeat ?? 0);
+                                                                
+                                                                // Validations
+                                                                let maximumQuantityValidationState : boolean = false;
+                                                                let minimumQuantityValidationState : boolean = false;
+                                                                let remainingSeatValidationState : boolean = false;
+                                                                
+                                                                // If maximum count is greater than or equal to 1 then further check the orderCount and maximumQuantity.
+                                                                // Else (0) no maximum count set.
+                                                                if (maximumQuantity >= 1) {
+                                                                    // Check order count
+                                                                    if (orderCount <= maximumQuantity) {
+                                                                        maximumQuantityValidationState = true;
+                                                                    }
+                                                                } else {
+                                                                    maximumQuantityValidationState = true;
+                                                                }
+                                                                
+                                                                // If minimum count is greater than or equal to 1 then further check the orderCount and minimumQuantity.
+                                                                // Else (0) no minimum count set.
+                                                                if (minimumQuantity >= 1) {
+                                                                    if (orderCount >= minimumQuantity) {
+                                                                        minimumQuantityValidationState = true;
+                                                                    }
+                                                                } else {
+                                                                    minimumQuantityValidationState = true;
+                                                                }
+
+                                                                if (remainingSeats >= orderCount) {
+                                                                    remainingSeatValidationState = true;
+                                                                }
+
+                                                                if (!minimumQuantityValidationState) {
+                                                                    alert("Minimum number of members was not met.")
+                                                                }
+
+                                                                if (!maximumQuantityValidationState) {
+                                                                    alert("Maximum number of members exceeded the set limit.");
+                                                                }
+
+                                                                if (!remainingSeatValidationState) {
+                                                                    this.setState({
+                                                                        productModalOpenState: false,
+                                                                        groupFullCapacityModal: true
+                                                                    })
+                                                                }
+                                                                
+                                                                if (minimumQuantityValidationState && maximumQuantityValidationState && remainingSeatValidationState) {
+                                                                    this.setState({
+                                                                        paymentSelectionModal: true,
+                                                                        productModalOpenState: false
+                                                                    });
+                                                                }
+                                                                
+                                                            }} disabled={
+                                                                (this.state.orderContext?.orderDetails?.length ?? 0) >= (this.state.selectedProductModal?.product?.minQuantity ?? 0) 
+                                                                ? false : true
+                                                                } className={'btn mtb-button-outline mtb-button-border-radius py-3'} style={{
+                                                                fontWeight: 600
+                                                            }}>
+                                                                Proceed to checkout
+                                                                <FaArrowRight className={'ms-2'} />
+                                                            </button>
+                                                        </div>
+                                                    </>
+                                                ))}
+                                                
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </DialogContent>
+                    </Dialog>
+                </>
                 <div className={'masthead position-absolute pt-3 pt-md-4 mt-2'}>
                     <div className={'container'}>
                         <div style={{
@@ -781,7 +2756,7 @@ class Home extends React.Component<typeof styles, IHomeState> {
                             <div className={'logo'}>
                                 <div className={'logoInner'}>
                                     <img className={'logoImage'} src={Logo} height={55} width={'auto'} />
-                                    <span className={'logoText d-none d-md-inline'}>mtb</span>
+                                    {/* <span className={'logoText d-none d-md-inline'}>mtb</span> */}
                                 </div>
                                 
                             </div>
@@ -830,8 +2805,10 @@ class Home extends React.Component<typeof styles, IHomeState> {
                     </div>
                 </div>
                 
-                <div className={'mtb-drawer'}>
+                <div className={'mtb-drawer'} >
                     <Drawer
+
+                        variant={'persistent'}
                         anchor={'right'}
                         open={sidenavExpand}
                         onClose={() => {
@@ -841,7 +2818,7 @@ class Home extends React.Component<typeof styles, IHomeState> {
                         }}
                         
                     >
-                        <div className={'mtb-drawer-inner px-2 py-4'}>
+                        <div className={'mtb-drawer-inner px-4 py-4'}>
                             <ul className={'list-group list-group-flush text-start'}>
                                 <li className={'mtb-nav list-group-item text-start border-0 ps-1 px-0 py-0'}>
                                     <button onClick={() => {
@@ -856,20 +2833,20 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                     </button>
                                 </li>
                                 <li className={'mtb-nav list-group-item border-0 ps-0 px-0 py-0'}>
-                                    <Link className="btn nav-link text-start" to={'mtb-hp-educatorsmessage'}>
+                                    <Link className="btn nav-link text-start" spy={true} to={'mtb-hp-educatorsmessage'}>
                                         About
                                     </Link>
                                     
                                 </li>
 
                                 <li className={'mtb-nav list-group-item border-0 ps-0 px-0 py-0'}>
-                                    <Link className="btn nav-link text-start" to={'mtb-hp-eventdetails'}>
+                                    <Link className="btn nav-link text-start" spy={true} to={'mtb-hp-eventdetails'}>
                                         Event Details
                                     </Link>
                                     
                                 </li>
                                 <li className={'mtb-nav list-group-item border-0 ps-0 px-0 py-0'}>
-                                    <Link className="btn nav-link text-start" to={'mtb-hp-faq'}>
+                                    <Link className="btn nav-link text-start" spy={true} to={'mtb-hp-faq'}>
                                         FAQ
                                     </Link>
                                     
@@ -882,7 +2859,7 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                     
                                 </li>
                                 <li className={'mtb-nav list-group-item border-0 ps-0 px-0 py-0'}>
-                                    <Link className="btn nav-link text-start d-grid d-block" to={'mtb-hp-pricing'}>
+                                    <Link className="btn nav-link text-start d-grid d-block" spy={true} to={'mtb-hp-pricing'}>
                                         <button className="btn mtb-button mtb-button-border-radius px-4">
                                             <span style={{
                                                 fontSize: '90%',
@@ -901,18 +2878,19 @@ class Home extends React.Component<typeof styles, IHomeState> {
                     </Drawer>
                 </div>
             
-                <div className={'mtb-hp-hero pt-4 pb-4'}>
-                    <div className={'container mt-4'}>
+                <div className={'mtb-hp-hero pt-4 pt-md-4 pt-lg-0 pb-4'}>
+                    <div className={'container mt-4 mt-md-4 mt-lg-0'}>
                         <div className={'row d-flex align-items-center mt-0 mt-md-5 mb-5 mb-md-0 pb-5 pb-md-0'}>
                             <div className={'col-12 col-lg-6 col-md-12 col-sm-12 mt-5 mt-lg-1 pt-5 pt-lg-1 pt-sm-5'}>
-                                <span className={'mtb-hp-hero-text1'}>
-                                    This would help whitespaces
-                                </span>
+                                
                                 <h1 className={'mt-1 mtb-hp-hero-title'} style={{
                                     
                                 }}>
-                                <span className={'mtb-text-color-primary'}>More than Before</span> : A Real Life Financial Education for the Upcoming Adults
+                                <span className={'mtb-text-color-primary'}>More than Before</span> : Real Life Financial Education for Year 12 Leavers
                                 </h1>
+                                <p className={'mt-1 mtb-hp-text1'}>
+                                    "A fun and practical small group learning experience."
+                                </p>
                                 <div className={'d-grid gap-2 d-block d-lg-inline-block mt-4'}>
                                     
                                     <Link to={'mtb-hp-educatorsmessage'} className="btn mtb-button mtb-button-border-radius px-5 py-3" style={{
@@ -974,7 +2952,8 @@ class Home extends React.Component<typeof styles, IHomeState> {
                     </div>
                     
                 </div>
-
+                
+                {/*
                 <div className={'mtb-hp-featuredbrands'}>
                     <div className={'container'}>
                         <div className={'row gutter-3 gy-4 gx-5 py-4 d-flex align-items-center justify-content-center justify-content-md-between'}>
@@ -990,6 +2969,7 @@ class Home extends React.Component<typeof styles, IHomeState> {
                         </div>
                     </div>
                 </div>
+                */}
 
                 <div className={'mtb-main-content'}>
                     <Element name={'mtb-hp-educatorsmessage'}>
@@ -998,8 +2978,10 @@ class Home extends React.Component<typeof styles, IHomeState> {
                             <div className={'row gx-5 gy-3 d-flex align-items-center justify-content-center'}>
                                 <div className={'col-12 col-lg-6 col-md-12 col-sm-12'}>
                                     
-                                    <ReactPlayer playing={false} light={false} url={EducatorMessageVideo} width="100%" height="auto" controls={true} />
                                     
+                                    <ReactPlayer playing={false} light={false} url={"https://assets.morethanbefore.com.au/media/mtb-julius-rev1.m4v"} width="100%" height="auto" controls={true} />
+                                    
+                                    {/* <img src={EducatorsPic} width={'100%'} height={'100%'} /> */}
                                 </div>
                                 <div className={'col-12 col-lg-6 col-md-12 col-sm-12'}>
                                     <div className={'mx-auto'} style={{
@@ -1013,11 +2995,15 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                             Hi, I am <span className={'mtb-text-color-primary'}>Julius</span>
                                         </h1>
                                         <p className={'mtb-hp-paragraph'}>
-                                            Sed id mauris sit amet mauris dignissim sagittis quis a lectus. Integer vestibulum justo sed elit commodo faucibus.Vestibulum eu vehicula nunc, in convallis mi. Aliquam facilisis eu dolor ac porttitor.
+                                        Julius Owusu is a passionate Financial Coach that used to work with one of the biggest banks in Australia as a Web Engineer. However, after a series of events in Julius' life, he found himself that his true calling was in Finance. Teaching young people how to become money smart.
                                         </p>
 
                                         <p className={'mtb-hp-paragraph'}>
-                                            Pellentesque non augue est. Nam euismod molestie tortor. Curabitur dapibus risus quis lacus fringilla placerat. Mauris ac sollicitudin libero, eget imperdiet.
+                                        Julius understands that working hard is good but working smart is better. And believe it or not, understanding money and learning how to get it to work for you is a crucial first step to financial independence.
+                                        </p>
+
+                                        <p className={'mtb-hp-paragraph'}>
+                                        And so, through the More Than Before program, it is designed to help parents and their kids create a legacy for the generations that will follow them. A treasure that can build them a generational and purposeful wealth.
                                         </p>
                                     </div>
                                 </div>
@@ -1042,8 +3028,14 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                             About <span className={'mtb-text-color-primary'}>Us</span>
                                         </h1>
                                         <p className={'mtb-hp-paragraph'}>
-                                            "More than Before" is an education and mentoring company for teenagers, focused on providing relational support, practical education and guidance on life direction and wealth creation.
+                                            "More Than Before" is the leading project to come out of Purpose Advisory's Educational Launchpad. Purpose Advisory, an Australian financial advice and life coaching business partnered with Julius Owusu, founder of MTB, to help change the experience school leavers have of entering the workforce, and to help more people live and achieve the fulfilled life.
                                         </p>
+                                        <div className={'d-block'}>
+                                            <div className={'d-inline-block'}>
+                                                <span className={'me-4'}><img src={PALogo} width="auto" height="50px" /></span>
+                                                <span><img src={PAAcademyLogo} width="auto" height="80px" /></span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1084,13 +3076,13 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                             Our <span className={'mtb-text-color-primary'}>Vision</span> & <span className={'mtb-text-color-primary'}>Mission</span>
                                         </h1>
                                         <p className={'mtb-hp-paragraph'}>
-                                            We aim to support teens and young adults and teach them the skills they need to identify their direction in life, build wealth, with the goal of them succeeding in their career and relationships.
+                                            “We find people who are passionate about teaching and we empower them to do it.”
                                         </p>
                                         <p className={'mtb-hp-paragraph'}>
-                                            This will equip our teens and young adults to be more capable parents one day who can pass on these skills and insights to their children, creating generational change.
+                                            We aim to provide support and knowledge to teach our teens the additional neccessary skills that they needed to identify their direction in life, and wealth building with the goal of them succeeding in their career and relationships.
                                         </p>
                                         <p className={'mtb-hp-paragraph'}>
-                                            As a result, we will see Australia become a more free, empowered, health and prosperous nation.
+                                            This will equip our teens and young adults to be more capable, creating generational change. As a result, we will see Australia become a more free, empowered, health and prosperous nation.
                                         </p>
                                     </div>
                                 </div>
@@ -1195,7 +3187,7 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                             "Wealth is not dependent on "good grades" - you don't need good grades to become wealthy."
                                         </p>
                                         <p className={'mtb-hp-paragraph'}>
-                                            The More than Before Event is a 6-week program that starts on the 6th of December 2021 until the 24th of January 2022.
+                                            The More than Before Event is a 6-week program that starts on the 11th of January 2022 until the 15th of February 2022.
                                         </p>
                                         <p className={'mtb-hp-paragraph'}>
                                             Participants will meet with our Facilitators once every week throughout the program duration.
@@ -1406,253 +3398,238 @@ class Home extends React.Component<typeof styles, IHomeState> {
                     </section>
                     </Element>
                     
-                    <Element name={'mtb-hp-pricing'}>
+                    
                     <section id={'mtb-hp-pricing'} className={'mt-0 py-5'}>
                         <div className={'container py-5'}>
-                            <div className={'d-flex align-items-center justify-content-center'}>
-                                 <div className={'mx-auto text-center'} style={{
-                                        maxWidth: 515,
-                                        alignItems: 'center'
+                                <Element name={'mtb-hp-pricing'}>
+                                <div className={'d-flex align-items-center justify-content-center'}>
+                                    <div className={'mx-auto text-center'} style={{
+                                            maxWidth: 515,
+                                            alignItems: 'center'
+                                        }}>
+                                            <span className={'mtb-hp-text1 mb-2'}>
+                                                Choose your Package
+                                            </span>
+                                            <h1 className={'mtb-hp-title'}>
+                                                Our <span className={'mtb-text-color-primary'}>Pricing</span>
+                                            </h1>
+                                    </div>
+
+                                </div>
+                                </Element>
+                                <div className={'row mt-5 d-flex gx-5 align-items-center justify-content-center mx-auto'}>
+                                    <div className={'col-auto px-4'} onClick={() => {
+                                        this.setState({tabPricingActive: 1});
                                     }}>
-                                        <span className={'mtb-hp-text1 mb-2'}>
-                                            Choose your Package
+                                        <span className={'mtb-hp-tab-title ' + (tabPricingActive == 1 ? 'mtb-hp-tab-title-active' : 'mtb-hp-tab-title-nonactive')} style={{
+                                            fontSize: '120%',
+                                            fontWeight: 600,
+                                            position: 'relative'
+                                        }}>
+                                            Individual
                                         </span>
-                                        <h1 className={'mtb-hp-title'}>
-                                            Our <span className={'mtb-text-color-primary'}>Pricing</span>
-                                        </h1>
+                                    </div>
+                                    <div className={'col-auto px-4'} onClick={() => {
+                                        this.setState({tabPricingActive: 2});
+                                    }}>
+                                        <span className={'mtb-hp-tab-title ' + (tabPricingActive == 2 ? 'mtb-hp-tab-title-active' : 'mtb-hp-tab-title-nonactive')} style={{
+                                            fontSize: '120%',
+                                            fontWeight: 600
+                                        }}>
+                                            For groups
+                                        </span>
+                                    </div>
                                 </div>
 
-                            </div>
-                            <div className={'row mt-5 d-flex gx-5 align-items-center justify-content-center mx-auto'}>
-                                <div className={'col-auto px-4'} onClick={() => {
-                                    this.setState({tabPricingActive: 1});
-                                }}>
-                                    <span className={'mtb-hp-tab-title ' + (tabPricingActive == 1 ? 'mtb-hp-tab-title-active' : 'mtb-hp-tab-title-nonactive')} style={{
-                                        fontSize: '120%',
-                                        fontWeight: 600,
-                                        position: 'relative'
-                                    }}>
-                                        
-                                        Individual
-                                    </span>
-                                </div>
-                                <div className={'col-auto px-4'} onClick={() => {
-                                    this.setState({tabPricingActive: 2});
-                                }}>
-                                    <span className={'mtb-hp-tab-title ' + (tabPricingActive == 2 ? 'mtb-hp-tab-title-active' : 'mtb-hp-tab-title-nonactive')} style={{
-                                        fontSize: '120%',
-                                        fontWeight: 600
-                                    }}>
-                                        For groups
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div ref={this.pricingTableContainer} className={'mx-auto mt-5'}></div>
+                                <div ref={this.pricingTableContainer} className={'mx-auto mt-5'}></div>
                             
-                            {(tabPricingActive == 1 ? <Portal container={this.pricingTableContainer.current}>
-                                <div className={'row d-flex justify-content-center gx-5 gy-5'}>
-                                    {(individual ? 
-                                    (individual.map((d, index) => {
-                                        // console.log(d);
+                                {(tabPricingActive == 1 ? <Portal container={this.pricingTableContainer.current}>
+                                    <div className={'row d-flex justify-content-center gx-5 gy-5'}>
+                                        {(productsFromDb ?
+                                        (productsFromDb.individual?.map((d, index) => {
+                                            const promoDateValid = d?.validation?.promoDates ?? false;
+                                            
+                                            return (
+                                            <div className={'col-auto'}>
+                                                <div style={{
+                                                    borderRadius: 20
+                                                }} className={'shadow mtb-hp-pricingcard ' + (promoDateValid ? 'mtb-hp-pricingcard-highlighted' : '')}>
+                                                    <span style={{
+                                                        fontFamily: 'Poppins',
+                                                        fontSize: '130%',
+                                                        fontWeight: 500,
+                                                        color: (promoDateValid ? (promoDateValid ? '#ffffff' : '#013763') : '#013763'),
+                                                        display: 'block'
+                                                    }} className={'text-center mb-3'}>
+                                                        {d?.product?.prodName}
+                                                    </span>
+                                                    <span style={{
+                                                        fontFamily: 'Poppins',
+                                                        fontSize: '220%',
+                                                        fontWeight: 600,
+                                                        color: (promoDateValid ? (promoDateValid ? '#ffffff' : '#013763') : '#013763'),
+                                                        display: 'block'
+                                                    }} className={'text-center'}>
+                                                        ${(d?.product?.price?.unitCost ?? 0).toFixed(2)}
+                                                    </span>
 
-                                        const currentDate = moment().format('ll');
-                                        const hasEnded = (moment(d?.date?.end).diff(currentDate, 'days') >= 1 ? false : true);
-                                        const hasStarted = (moment(d?.date?.start).diff(currentDate, 'days') <= 0 ? true : false)
-                                        const hasStarted2 = moment(d?.date?.start).diff(currentDate, 'days');
-                                        
-                                        /*
-                                        // Disable this when not debugging.
-                                        console.log(hasEnded);
-                                        console.log(hasStarted2 + ' : ' + hasStarted);
-                                        */
-
-                                        return (
-                                        <div className={'col-auto'}>
-                                            <div style={{
-                                                borderRadius: 20
-                                            }} className={'shadow mtb-hp-pricingcard ' + (hasStarted ? (!hasEnded ? 'mtb-hp-pricingcard-highlighted' : '') : '')}>
-                                                <span style={{
-                                                    fontFamily: 'Poppins',
-                                                    fontSize: '130%',
-                                                    fontWeight: 500,
-                                                    color: (hasStarted ? (!hasEnded ? '#ffffff' : '#013763') : '#013763'),
-                                                    display: 'block'
-                                                }} className={'text-center mb-3'}>
-                                                    {d?.title}
-                                                </span>
-                                                <span style={{
-                                                    fontFamily: 'Poppins',
-                                                    fontSize: '220%',
-                                                    fontWeight: 600,
-                                                    color: (hasStarted ? (!hasEnded ? '#ffffff' : '#013763') : '#013763'),
-                                                    display: 'block'
-                                                }} className={'text-center'}>
-                                                    ${(d.price ?? 0).toFixed(2)}
-                                                </span>
-
-                                                {d?.features ? 
-                                                (<ul className={'list-group list-group-flush mt-4 mb-4'}>
-                                                    {d.features.map((f, i) => {
-                                                        return (<li style={{
-                                                            background: 'transparent'
-                                                        }} className={'list-group-item border-0 ps-0 d-flex justify-content-start align-items-center'}>
-                                                            <div style={{
-                                                                marginRight: 10
-                                                            }}>
-                                                                <FaCheck style={{
-                                                                    fontSize: 25,
-                                                                    color: (hasStarted ? (!hasEnded ? '#ffffff' : '#37D451') : '#37D451')
-                                                                }} />
-                                                            </div>
-                                                            
-                                                            <div style={{
-                                                                float: 'left'
-                                                            }}>
-                                                                <span style={{
-                                                                    fontFamily: 'Poppins',
-                                                                    fontSize: '90%',
-                                                                    fontWeight: 600,
-                                                                    display: 'inline-block',
-                                                                    color: (hasStarted ? (!hasEnded ? '#ffffff' : '#013763') : '#013763'),
-                                                                    lineHeight: '170%'
+                                                    {fixedDataProductfeatures ? 
+                                                    (<ul className={'list-group list-group-flush mt-4 mb-4'}>
+                                                        {fixedDataProductfeatures.map((f, i) => {
+                                                            return (<li style={{
+                                                                background: 'transparent'
+                                                            }} className={'list-group-item border-0 ps-0 d-flex justify-content-start align-items-center'}>
+                                                                <div style={{
+                                                                    marginRight: 10
                                                                 }}>
-                                                                    {f?.text}
-                                                                </span>
-                                                            </div>
-                                                        </li>)
-                                                    })}
-                                                </ul>)
-                                                : ''}
-                                                
-                                                
-                                                <div className={'d-grid d-block'}>
-                                                    <button disabled={(hasEnded ? true : false)} type={'button'} style={{
-                                                        fontSize: '90%',
-                                                        fontWeight: 600
-                                                    }} className={'btn mtb-button-border-radius py-3 ' + (hasStarted ? (!hasEnded ? 'mtb-button-white' : 'mtb-button') : 'mtb-button')}>Register</button>
+                                                                    <FaCheck style={{
+                                                                        fontSize: 25,
+                                                                        color: (promoDateValid ? (promoDateValid ? '#ffffff' : '#37D451') : '#37D451')
+                                                                    }} />
+                                                                </div>
+                                                                
+                                                                <div style={{
+                                                                    float: 'left'
+                                                                }}>
+                                                                    <span style={{
+                                                                        fontFamily: 'Poppins',
+                                                                        fontSize: '90%',
+                                                                        fontWeight: 600,
+                                                                        display: 'inline-block',
+                                                                        color: (promoDateValid? (promoDateValid ? '#ffffff' : '#013763') : '#013763'),
+                                                                        lineHeight: '170%'
+                                                                    }}>
+                                                                        {f?.text}
+                                                                    </span>
+                                                                </div>
+                                                            </li>)
+                                                        })}
+                                                    </ul>)
+                                                    : ''}
+                                                    
+                                                    
+                                                    <div className={'d-grid d-block'}>
+                                                        <button onClick={(event) => {
+                                                            // console.log(d);
+                                                            this.openProductModal(d?.product?.promoCode ?? "");
+                                                            
+                                                        }} disabled={(!promoDateValid ? true : false)} type={'button'} style={{
+                                                            fontSize: '90%',
+                                                            fontWeight: 600
+                                                        }} className={'btn mtb-button-border-radius py-3 ' + (promoDateValid ? (promoDateValid ? 'mtb-button-white' : 'mtb-button') : 'mtb-button')}>Register</button>
 
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        );
-
-                                    }))
-                                     : '')
-                                    }
-                                </div>
-                            </Portal> : '')}
-                            
-                            {(tabPricingActive == 2 ? <Portal container={this.pricingTableContainer.current}>
-                                <div className={'row d-flex justify-content-center gx-5 gy-5'}>
-                                    {(group ? 
-                                    (group.map((d, index) => {
-                                        console.log(d);
-
-                                        const currentDate = moment().format('ll');
-                                        const hasEnded = (moment(d?.date?.end).diff(currentDate, 'days') >= 1 ? false : true);
-                                        const hasStarted = (moment(d?.date?.start).diff(currentDate, 'days') <= 0 ? true : false)
-                                        const hasStarted2 = moment(d?.date?.start).diff(currentDate, 'days');
+                                            )
+                                        })) 
+                                        : '')}
                                         
-                                        /*
-                                        // Disable this when not debugging.
-                                        console.log(hasEnded);
-                                        console.log(hasStarted2 + ' : ' + hasStarted);
-                                        */
+                                    </div>
+                                </Portal> : '')}
+                            
+                                {(tabPricingActive == 2 ? <Portal container={this.pricingTableContainer.current}>
+                                    <div className={'row d-flex justify-content-center gx-5 gy-5'}>
+                                        {(productsFromDb ?
+                                        (productsFromDb.group?.map((d, index) => {
+                                            const promoDateValid = d?.validation?.promoDates ?? false;
+                                            
+                                            return (
+                                                <div className={'col-auto'}>
+                                                <div style={{
+                                                    borderRadius: 20
+                                                }} className={'shadow mtb-hp-pricingcard ' + (promoDateValid ? 'mtb-hp-pricingcard-highlighted' : '')}>
+                                                    <span style={{
+                                                        fontFamily: 'Poppins',
+                                                        fontSize: '130%',
+                                                        fontWeight: 500,
+                                                        color: (promoDateValid ? (promoDateValid ? '#ffffff' : '#013763') : '#013763'),
+                                                        display: 'block'
+                                                    }} className={'text-center mb-3'}>
+                                                        {d?.product?.prodName}
+                                                    </span>
+                                                    <span style={{
+                                                        fontFamily: 'Poppins',
+                                                        fontSize: '220%',
+                                                        fontWeight: 600,
+                                                        color: (promoDateValid ? (promoDateValid ? '#ffffff' : '#013763') : '#013763'),
+                                                        display: 'block'
+                                                    }} className={'text-center'}>
+                                                        ${(d?.product?.price?.unitCost ?? 0).toFixed(2)}
+                                                    </span>
 
-                                        return (
-                                        <div className={'col-auto'}>
-                                            <div style={{
-                                                borderRadius: 20
-                                            }} className={'shadow mtb-hp-pricingcard ' + (hasStarted ? (!hasEnded ? 'mtb-hp-pricingcard-highlighted' : '') : '')}>
-                                                <span style={{
-                                                    fontFamily: 'Poppins',
-                                                    fontSize: '130%',
-                                                    fontWeight: 500,
-                                                    color: (hasStarted ? (!hasEnded ? '#ffffff' : '#013763') : '#013763'),
-                                                    display: 'block'
-                                                }} className={'text-center mb-3'}>
-                                                    {d?.title}
-                                                </span>
-                                                <span style={{
-                                                    fontFamily: 'Poppins',
-                                                    fontSize: '220%',
-                                                    fontWeight: 600,
-                                                    color: (hasStarted ? (!hasEnded ? '#ffffff' : '#013763') : '#013763'),
-                                                    display: 'block'
-                                                }} className={'text-center'}>
-                                                    ${(d.price ?? 0).toFixed(2)}
-                                                </span>
-
-                                                {d?.features ? 
-                                                (<ul className={'list-group list-group-flush mt-4 mb-4'}>
-                                                    {d.features.map((f, i) => {
-                                                        return (<li style={{
-                                                            background: 'transparent'
-                                                        }} className={'list-group-item border-0 ps-0 d-flex justify-content-start align-items-center'}>
-                                                            <div style={{
-                                                                marginRight: 10
-                                                            }}>
-                                                                <FaCheck style={{
-                                                                    fontSize: 25,
-                                                                    color: (hasStarted ? (!hasEnded ? '#ffffff' : '#37D451') : '#37D451')
-                                                                }} />
-                                                            </div>
-                                                            
-                                                            <div style={{
-                                                                float: 'left'
-                                                            }}>
-                                                                <span style={{
-                                                                    fontFamily: 'Poppins',
-                                                                    fontSize: '90%',
-                                                                    fontWeight: 600,
-                                                                    display: 'inline-block',
-                                                                    color: (hasStarted ? (!hasEnded ? '#ffffff' : '#013763') : '#013763'),
-                                                                    lineHeight: '170%'
+                                                    {fixedDataProductfeatures ? 
+                                                    (<ul className={'list-group list-group-flush mt-4 mb-4'}>
+                                                        {fixedDataProductfeatures.map((f, i) => {
+                                                            return (<li style={{
+                                                                background: 'transparent'
+                                                            }} className={'list-group-item border-0 ps-0 d-flex justify-content-start align-items-center'}>
+                                                                <div style={{
+                                                                    marginRight: 10
                                                                 }}>
-                                                                    {f?.text}
-                                                                </span>
-                                                            </div>
-                                                        </li>)
-                                                    })}
-                                                </ul>)
-                                                : ''}
-                                                
-                                                
-                                                <div className={'d-grid d-block'}>
-                                                    <button type={'button'} style={{
-                                                        fontSize: '90%',
-                                                        fontWeight: 600
-                                                    }} className={'btn mtb-button-border-radius py-3 ' + (hasStarted ? (!hasEnded ? 'mtb-button-white' : 'mtb-button') : 'mtb-button')}>Register</button>
+                                                                    <FaCheck style={{
+                                                                        fontSize: 25,
+                                                                        color: (promoDateValid ? (promoDateValid ? '#ffffff' : '#37D451') : '#37D451')
+                                                                    }} />
+                                                                </div>
+                                                                
+                                                                <div style={{
+                                                                    float: 'left'
+                                                                }}>
+                                                                    <span style={{
+                                                                        fontFamily: 'Poppins',
+                                                                        fontSize: '90%',
+                                                                        fontWeight: 600,
+                                                                        display: 'inline-block',
+                                                                        color: (promoDateValid? (promoDateValid ? '#ffffff' : '#013763') : '#013763'),
+                                                                        lineHeight: '170%'
+                                                                    }}>
+                                                                        {f?.text}
+                                                                    </span>
+                                                                </div>
+                                                            </li>)
+                                                        })}
+                                                    </ul>)
+                                                    : ''}
+                                                    
+                                                    
+                                                    <div className={'d-grid d-block'}>
+                                                        <button onClick={(event) => {
+                                                            // console.log(d);
+                                                            this.openProductModal(d?.product?.promoCode ?? "");
+                                                            
+                                                        }} disabled={(!promoDateValid ? true : false)} type={'button'} style={{
+                                                            fontSize: '90%',
+                                                            fontWeight: 600
+                                                        }} className={'btn mtb-button-border-radius py-3 ' + (promoDateValid ? (promoDateValid ? 'mtb-button-white' : 'mtb-button') : 'mtb-button')}>Register</button>
 
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        );
-
-                                    }))
-                                     : '')
-                                    }
+                                            )
+                                        })) 
+                                        : '')
+                                        }
+                                        
+                                    </div>
+                                </Portal> : '')}
+                                <div className={'d-block text-center mx-auto'} style={{
+                                    marginTop: 70,
+                                    maxWidth: '85%'
+                                }}>
+                                    <span className={'mtb-hp-text1'} style={{
+                                        fontSize: '100%',
+                                        fontWeight: 400
+                                    }}>
+                                        *On Sale until December 31, 2021 (AEDT).
+                                    </span>
+                                    <span className={'mtb-hp-text1'} style={{
+                                        fontSize: '100%',
+                                        fontWeight: 400
+                                    }}>
+                                        **Will be on Sale starting January 1, 2022 (AEDT).
+                                    </span>
                                 </div>
-                            </Portal> : '')}
-
-                            <div className={'d-block text-center mx-auto'} style={{
-                                marginTop: 70,
-                                maxWidth: '85%'
-                            }}>
-                                <span className={'mtb-hp-text1'} style={{
-                                    fontSize: '100%',
-                                    fontWeight: 400
-                                }}>
-                                    *On Sale until November 15, 2021 (AEDT).
-                                </span>
-                                <span className={'mtb-hp-text1'} style={{
-                                    fontSize: '100%',
-                                    fontWeight: 400
-                                }}>
-                                    **Will be on Sale starting November 16, 2021 (AEDT).
-                                </span>
-                            </div>
 
                             <div id={'mtb-hp-reservation'} style={{
                                 backgroundSize: 'auto',
@@ -1661,14 +3638,14 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                 height: '90%'
                                 
                             }} className={'mb-5 px-0 px-md-4 py-3 mt-5 position-relative'}>
-                                <div className={'w-100 position-absolute h-100'} style={{
+                                <div className={'w-100 position-absolute mtb-h-70'} style={{
                                     backgroundImage: "linear-gradient(161deg, rgba(1,55,99,1) 0%, rgba(239,73,46,1) 100%)",
                                     zIndex: -1,
                                     overflow: 'hidden',
                                     borderRadius: 30,
                                     opacity: 0.8
                                 }}></div>
-                                <div className={'d-none d-lg-block w-100 position-absolute h-100 px-0 px-md-5 text-sm-end text-center'} style={{
+                                <div className={'d-none d-lg-block w-100 position-absolute mtb-h-70 px-0 px-md-5 text-sm-end text-center'} style={{
                                     zIndex: -2,
                                     overflow: 'hidden',
                                     borderRadius: 30,
@@ -1678,10 +3655,11 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                 }}>
                                     <img src={ProductReservePersonPic} height={'100%'} width={'auto'} />
                                 </div>
-
-                                <div className={'w-100 position-absolute h-100 d-flex align-items-center px-4 px-md-5'} style={{
+                                
+                                <Element name={'mtb-hp-reservation'}>
+                                <div className={'w-100 position-absolute mtb-h-70 d-flex align-items-center px-4 px-md-5'} style={{
                                     paddingTop: 50,
-                                    paddingBottom: 50
+                                    paddingBottom: 50,
                                 }}>
                                     <div className={'d-block row gy-3'} style={{
                                         maxWidth: 700
@@ -1710,26 +3688,28 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                         </div>
                                         <div className={'col-12'}>
                                             <div className={'d-grid d-md-inline-block d-block'}>
-                                                <button className={'btn mtb-button-white-2 mtb-button-border-radius px-5 py-3'} style={{
+                                                <button onClick={() => {
+                                                    this.openReservationModal("PDWAY4HM9HW7VVKP5PRU"); // replace this whenever a new promo code has been created.
+                                                }} className={'btn mtb-button-white-2 mtb-button-border-radius px-5 py-3'} style={{
                                                     fontSize: '90%',
                                                     fontWeight: 600,
                                                     color: '#806D7A'
                                                 }}>Reserve here</button>
-                                                <button className={'btn mtb-button-white-outline mtb-button-border-radius px-5 py-3 ms-0 ms-md-2 mt-3 mt-md-0'} style={{
+                                                <Link smooth={false} duration={300} to={'mtb-hp-contactform'} className={'btn mtb-button-white-outline mtb-button-border-radius px-5 py-3 ms-0 ms-md-2 mt-3 mt-md-0'} style={{
                                                     fontSize: '90%',
                                                     fontWeight: 600
-                                                }}>Contact Us</button>
+                                                }}>Contact Us</Link>
                                             </div>
 
                                         </div>
                                     </div>
                                     
                                 </div>
-                                
+                                </Element>
                             </div>
                             
                             <div className={'d-block text-center mx-auto'} style={{
-                                marginTop: 70,
+                                marginTop: -90,
                                 maxWidth: '85%'
                             }}>
                                 <span className={'mtb-hp-text1'} style={{
@@ -1740,10 +3720,21 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                 </span>
                             </div>
                             
+                            
+
                         </div>
                     </section>
-                    </Element>
-                    
+                    <div className={'text-center mx-auto'}>
+                        {/** For Staging Purposes (Remove this on production build) */}
+                        {/*}
+                        <div>
+                            <button onClick={() => {
+                                this.openProductModal("CMA44C7K9MEBXT4NV1IV");
+                            }} className={'btn mtb-button mtb-button-border-radius px-5 py-3'}>Payment for Staging Purposes</button>
+                        </div>
+                        */}
+                    </div>
+
                     <Element name={'mtb-hp-faq'}>
                     <section id={'mtb-hp-faq'} className={'mtb-hp-wrapper-bg-alt mt-5 py-5'}>
                         <div className={'container py-5'}>
@@ -1947,11 +3938,15 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                         </div>
                                         
                                 </div>
+
                                 <div className={'col-12 col-md-6 mx-auto'} style={{
                                     maxWidth: 600,
                                     alignItems: 'center'
                                 }}>
+                                    {/** Contact Form Section */}
+                                    
                                     <div className={'mtb-hp-contactform px-5 px-md-5 py-5 py-md-5 shadow'}>
+                                        
                                         <Form>
                                             <Form.Group className="mb-3" controlId="contactFormName">
                                                 <Form.Label className={'mtb-hp-text1'} style={{
@@ -1965,7 +3960,7 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                                     }}>
                                                         <FaUserAlt />
                                                     </InputGroup.Text>
-                                                    <Form.Control autoComplete={'off'} className={'border-0 outline-0 ps-1'} type="text" onChange={(e) => {
+                                                    <Form.Control disabled={this.state.messageFormBusyState} autoComplete={'on'} className={'border-0 outline-0 ps-1'} value={this.state.contact?.contactForm?.name} type="text" onChange={(e) => {
                                                         // console.log(e.target.value);
                                                         this.setState({
                                                             contact: {
@@ -1993,7 +3988,7 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                                     }}>
                                                         <FaEnvelope />
                                                     </InputGroup.Text>
-                                                    <Form.Control autoComplete={'off'} className={'border-0 outline-0 ps-1'} type="email" onChange={(e) => {
+                                                    <Form.Control disabled={this.state.messageFormBusyState} autoComplete={'on'} className={'border-0 outline-0 ps-1'} value={this.state.contact?.contactForm?.email} type="email" onChange={(e) => {
                                                         // console.log(e.target.value);
                                                         this.setState({
                                                             contact: {
@@ -2017,7 +4012,7 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                                     Message
                                                 </Form.Label>
                                                 <InputGroup className="mb-2 py-2 px-2 mtb-hp-contactform-textfield align-items-start">
-                                                    <Form.Control autoComplete={'off'} className={'border-0 outline-0 ps-1'} as={'textarea'} rows={3} onChange={(e) => {
+                                                    <Form.Control disabled={this.state.messageFormBusyState} autoComplete={'off'} className={'border-0 outline-0 ps-1'} value={this.state.contact?.contactForm?.message} as={'textarea'} rows={3} onChange={(e) => {
                                                         // console.log(e.target.value);
                                                         this.setState({
                                                             contact: {
@@ -2034,12 +4029,31 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                             </Form.Group>
                                         </Form>
                                         <div className={'d-grid d-block'}>
-                                            <button className={'btn mtb-button mtb-button-border-radius py-3'} style={{
+                                            
+                                            <button disabled={this.state.messageFormBusyState} className={'btn mtb-button mtb-button-border-radius py-3'} style={{
                                                 fontWeight: 600,
-                                                fontSize: '100%'
+                                                fontSize: '100%',
+                                                position: 'relative'
                                             }} onClick={() => {
-                                                console.log(contactForm);
-                                            }}>Submit</button>
+                                                this.handleContactForm();
+                                                // console.log(contactForm);
+                                            }}>
+                                                {this.state.messageFormBusyState ? (
+                                                    <div style={{
+                                
+                                                        width: '100%',
+                                                        visibility: 'visible'
+                                                    }}>
+                                                        <CircularProgress size={30} className={'mtb-loader'} sx={{
+                                                            color: '#fff'
+                                                        }} />
+                                                    </div>
+                                                ) : (
+                                                    <span>Submit</span>
+                                                ) }
+                                                
+                                                
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -2072,14 +4086,16 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                 {(majorSponsors ? 
                                     majorSponsors.map((d, index) => {
                                         return (
-                                            <div className={'col-12 col-md-4 '}>
+                                            (d?.title === undefined ?
+                                                ""
+                                            : <div className={'col-12 col-md-4 '}>
                                                 <div className={'mtb-hp-majorsponsor-box shadow p-5 p-md-4 p-lg-5 text-center'}>
                                                     <img src={d?.imageContext} style={{
                                                         maxWidth: '100%',
                                                         maxHeight: '100%'
                                                     }} />
                                                 </div>
-                                            </div>
+                                            </div>)
                                         );
                                     })
                                 
@@ -2092,11 +4108,15 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                 {(minorSponsors ? 
                                     minorSponsors.map((d, index) => {
                                         return (
+                                            (d?.title === undefined ?
+                                                ""
+                                            :
                                             <div className={'col-12 col-sm-12 col-md-auto d-flex justify-content-center'}>
                                                 <div className={'mtb-hp-minorsponsor-box shadow p-5 py-5 py-md-4 p-md-4 text-center d-flex align-items-center justify-content-center'}>
                                                     <img src={d?.imageContext} />
                                                 </div>
                                             </div>
+                                            )
                                         );
                                     })
                                 : '')}
@@ -2115,12 +4135,12 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                     }}>
                                         <img src={FooterMTBLogo} height={70} width={70} />
                                         <span className={'mtb-footer-companyinfo'}>
-                                            Lorem ipsum dolor sit amet, cour aing elit. Sed nunc nisl, rutrum nec dolor a, Sed nunc nisl, rutrum nec dolor a.
+                                        More Than Before is a subsidiary of Purpose Advisory.
                                         </span>
                                     </div>
 
                                     <div className={'mt-4'}>
-                                        <span className={'mtb-footer-copyright'}>© 2021 <b>More Than Before</b>.</span>
+                                        <span className={'mtb-footer-copyright'}>© {new Date().getFullYear()} <b>More Than Before</b>.</span>
                                     </div>
                                     
                                 </div>
@@ -2135,11 +4155,9 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                             <ul className={'mtb-footer-navlist list-group-flush m-0 p-0'}>
                                                 {footerLinkSitemap.map((d, index) => {
                                                     return (
-                                                    <li className={'list-group-item border-0 ps-0 ms-0 py-1 d-flex justify-content-start align-items-center'} onClick={(e) => {
-                                                        console.log(e);
-                                                    }}>
+                                                    <Link smooth={false} duration={300} to={d?.action} className={'list-group-item border-0 ps-0 ms-0 py-1 d-flex justify-content-start align-items-center'}>
                                                         {d?.title}
-                                                    </li>
+                                                    </Link>
                                                     );
                                                     
                                                 })}
@@ -2159,11 +4177,9 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                             <ul className={'mtb-footer-navlist list-group-flush m-0 p-0'}>
                                                 {footerLinkProduct.map((d, index) => {
                                                     return (
-                                                    <li className={'list-group-item border-0 ps-0 ms-0 py-1 d-flex justify-content-start align-items-center'} onClick={(e) => {
-                                                        console.log(e);
-                                                    }}>
+                                                    <Link smooth={false} duration={300} to={d?.action} className={'list-group-item border-0 ps-0 ms-0 py-1 d-flex justify-content-start align-items-center'} >
                                                         {d?.title}
-                                                    </li>
+                                                    </Link>
                                                     );
                                                     
                                                 })}
@@ -2183,11 +4199,9 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                             <ul className={'mtb-footer-navlist list-group-flush m-0 p-0'}>
                                                 {footerLinkHelp.map((d, index) => {
                                                     return (
-                                                    <li className={'list-group-item border-0 ps-0 ms-0 py-1 d-flex justify-content-start align-items-center'} onClick={(e) => {
-                                                        console.log(e);
-                                                    }}>
+                                                    <Link smooth={false} duration={300} to={d?.action} className={'list-group-item border-0 ps-0 ms-0 py-1 d-flex justify-content-start align-items-center'}>
                                                         {d?.title}
-                                                    </li>
+                                                    </Link>
                                                     );
                                                     
                                                 })}
@@ -2252,11 +4266,9 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                                 <ul className={'mtb-footer-navlist list-group-flush m-0 p-0'}>
                                                 {footerLinkSitemap.map((d, index) => {
                                                     return (
-                                                    <li className={'list-group-item border-0 ps-0 ms-0 py-1 d-flex justify-content-start align-items-center'} onClick={(e) => {
-                                                        console.log(e);
-                                                    }}>
+                                                    <Link smooth={false} duration={300} to={d?.action} className={'list-group-item border-0 ps-0 ms-0 py-1 d-flex justify-content-start align-items-center'}>
                                                         {d?.title}
-                                                    </li>
+                                                    </Link>
                                                     );
                                                     
                                                 })}
@@ -2289,11 +4301,9 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                                 <ul className={'mtb-footer-navlist list-group-flush m-0 p-0'}>
                                                 {footerLinkProduct.map((d, index) => {
                                                     return (
-                                                    <li className={'list-group-item border-0 ps-0 ms-0 py-1 d-flex justify-content-start align-items-center'} onClick={(e) => {
-                                                        console.log(e);
-                                                    }}>
+                                                    <Link smooth={false} duration={300} to={d?.action} className={'list-group-item border-0 ps-0 ms-0 py-1 d-flex justify-content-start align-items-center'}>
                                                         {d?.title}
-                                                    </li>
+                                                    </Link>
                                                     );
                                                     
                                                 })}
@@ -2327,11 +4337,9 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                                 <ul className={'mtb-footer-navlist list-group-flush m-0 p-0'}>
                                                 {footerLinkHelp.map((d, index) => {
                                                     return (
-                                                    <li className={'list-group-item border-0 ps-0 ms-0 py-1 d-flex justify-content-start align-items-center'} onClick={(e) => {
-                                                        console.log(e);
-                                                    }}>
+                                                    <Link smooth={false} duration={300} to={d?.action} className={'list-group-item border-0 ps-0 ms-0 py-1 d-flex justify-content-start align-items-center'}>
                                                         {d?.title}
-                                                    </li>
+                                                    </Link>
                                                     );
                                                     
                                                 })}
@@ -2351,7 +4359,7 @@ class Home extends React.Component<typeof styles, IHomeState> {
                                     }}>
                                         <img src={FooterMTBLogo} height={70} width={70} />
                                         <span className={'mtb-footer-companyinfo'}>
-                                            Lorem ipsum dolor sit amet, cour aing elit. Sed nunc nisl, rutrum nec dolor a, Sed nunc nisl, rutrum nec dolor a.
+                                            More Than Before is a subsidiary of Purpose Advisory.
                                         </span>
                                     </div>
 
@@ -2385,7 +4393,7 @@ class Home extends React.Component<typeof styles, IHomeState> {
 
                                 <div className={'col-12'}>
                                     <div className={'mt-3'}>
-                                        <span className={'mtb-footer-copyright'}>© 2021 <b>More Than Before</b>.</span>
+                                        <span className={'mtb-footer-copyright'}>© {new Date().getFullYear()} <b>More Than Before</b>.</span>
                                     </div>
                                 </div>
                             </div>
@@ -2393,6 +4401,8 @@ class Home extends React.Component<typeof styles, IHomeState> {
                     </footer>
                     </Element>
                 </div>
+
+                
             </React.Fragment>
         );
 
@@ -2402,5 +4412,14 @@ class Home extends React.Component<typeof styles, IHomeState> {
     
 }
 
+const styles = (props : any) => ({
+    colorPrimary: {
+        backgroundColor: '#f5c0b8 !important',
+    },
+    barColorPrimary: {
+        backgroundColor: '#EF492E !important',
+    }
+});
+
 // export { Home };
-export default withStyles(styles, { withTheme: true })(Home);
+export default withStyles(styles)(Home);

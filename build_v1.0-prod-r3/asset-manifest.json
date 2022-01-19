@@ -1,0 +1,29 @@
+{
+  "files": {
+    "main.css": "/static/css/main.9209b745.chunk.css",
+    "main.js": "/static/js/main.aa341a90.chunk.js",
+    "runtime-main.js": "/static/js/runtime-main.5c8267ee.js",
+    "static/js/2.695c3181.chunk.js": "/static/js/2.695c3181.chunk.js",
+    "static/js/3.916ac526.chunk.js": "/static/js/3.916ac526.chunk.js",
+    "index.html": "/index.html",
+    "static/js/2.695c3181.chunk.js.LICENSE.txt": "/static/js/2.695c3181.chunk.js.LICENSE.txt",
+    "static/media/1080x1080.36628399.png": "/static/media/1080x1080.36628399.png",
+    "static/media/Component 3 – 1@2x.187f3133.png": "/static/media/Component 3 – 1@2x.187f3133.png",
+    "static/media/EventDetailsImage@2x.c1bc2ed4.png": "/static/media/EventDetailsImage@2x.c1bc2ed4.png",
+    "static/media/Hero Content.ef71306e.png": "/static/media/Hero Content.ef71306e.png",
+    "static/media/PersonReserve.84844fc5.png": "/static/media/PersonReserve.84844fc5.png",
+    "static/media/WelcomeKit.c9929368.png": "/static/media/WelcomeKit.c9929368.png",
+    "static/media/aboutus1@2x.3bcc283d.png": "/static/media/aboutus1@2x.3bcc283d.png",
+    "static/media/bookingcom@2x.51b2e707.png": "/static/media/bookingcom@2x.51b2e707.png",
+    "static/media/julius.55dd91bc.png": "/static/media/julius.55dd91bc.png",
+    "static/media/mastercard-2@2x.95c905bb.png": "/static/media/mastercard-2@2x.95c905bb.png",
+    "static/media/pa-academy.e60791fb.png": "/static/media/pa-academy.e60791fb.png",
+    "static/media/pa-logo.bb69c383.png": "/static/media/pa-logo.bb69c383.png"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.5c8267ee.js",
+    "static/js/2.695c3181.chunk.js",
+    "static/css/main.9209b745.chunk.css",
+    "static/js/main.aa341a90.chunk.js"
+  ]
+}

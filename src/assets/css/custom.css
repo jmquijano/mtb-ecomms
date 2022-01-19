@@ -55,8 +55,8 @@
 /* MTB Button */
 .mtb-button {
     width: auto;
-    font-size: 18px !inherit;
-    font-weight: 500 !inherit;
+    font-size: 18px inherit;
+    font-weight: 500 inherit;
     color: #fff !important;
     background: rgb(252,107,96);
     background: linear-gradient(150deg, rgba(252,107,96,1) 0%, rgba(233,71,45,1) 100%);
@@ -91,7 +91,7 @@
 .mtb-button-outline:hover {
     
     font-size: 90% inherit;
-    font-weight: 500 !inherit;
+    font-weight: 500 inherit;
     color: #fff !important;
     background: rgb(252,107,96);
     background: linear-gradient(150deg, rgba(252,107,96,1) 0%, rgba(233,71,45,1) 100%);
@@ -108,11 +108,12 @@
     box-shadow: 0px 0px 0px 3px rgba(255, 255, 255, 1) inset;
     -webkit-box-shadow: 0px 0px 0px 3px rgba(255, 255, 255, 1) inset;
     -moz-box-shadow: 0px 0px 0px 3px rgba(255, 255, 255, 1) inset;
+    transition: all 0.3s ease-in-out;
 }
 
-.mtb-button-white-outline:hover {
+.mtb-button-white-outline:hover, .mtb-button-white-outline:focus  {
     
-    font-size: 18px !important;
+    font-size: 90% inherit;
     font-weight: 500 !important;
     color: #806D7A !important;
     background: rgba(255, 255, 255, 1);
@@ -138,7 +139,8 @@
         background: linear-gradient(0deg, rgba(255,239,236,1) 0%, rgba(255,247,245,1) 100%);
         width: 100%;
         height: 100%;
-        min-height: 100%;
+        min-height: 100vh;
+        max-height: 1500px;
         display: flex;
         align-items: center;
     }
@@ -860,4 +862,130 @@
 
 .container {
     max-width: 1000px !important;
+}
+
+.mtb-loader {
+
+}
+
+.mtb-h-70 {
+  height: 70%;
+}
+
+/* MTB Membership Form */
+.mtb-hp-membership {
+  width: 100%;
+  display: inline-block;
+  border-radius: 8px;
+  transition: all 0.4s ease;
+  font-size: 15px;
+}
+
+.mtb-hp-membership-textfield {
+  background: #F9F9F9;
+  border-radius: 10px !important;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.mtb-hp-membership-textfield:hover, .mtb-hp-membership-textfield:active {
+  background: #fff;
+  border: 2px solid #F24F37;
+}
+
+.form-control {
+  background: transparent !important;
+}
+
+.mtb-hp-membership-textfield input, 
+.mtb-hp-membership-textfield input:focus, 
+.mtb-hp-membership-textfield span,
+.mtb-hp-membership-textfield textarea,
+.mtb-hp-membership-textfield textarea:focus,
+.mtb-hp-membership-textfield select,
+.mtb-hp-membership-textfield select:focus {
+  font-family: 'Poppins';
+  font-weight: 400;
+  color: #A5BACB;
+}
+
+.mtb-hp-membership-textfield:hover input, 
+.mtb-hp-membership-textfield:hover span,
+.mtb-hp-membership-textfield:hover textarea,
+.mtb-hp-membership-textfield:hover select {
+  color: #F24F37;
+}
+
+.mtb-hp-membership-textfield input::placeholder {
+  color: #A5BACB;
+  font-size: 90%;
+}
+
+.mtb-hp-payment-ortext  {
+  width: 100%; 
+  text-align: center; 
+  border-bottom: 1px solid #A5BACB; 
+  line-height: 0.1em;
+  margin: 10px 0 20px; 
+}
+.mtb-hp-payment-ortext span {
+  font-family: Poppins;
+  background:#fff; 
+  padding:0 10px;
+  color: #A5BACB;
+}
+
+/* MTB Checkout Payment */
+.mtb-checkout-header {
+  background: rgb(255,239,236);
+  background: linear-gradient(0deg, rgba(255,239,236,1) 0%, rgba(255,247,245,1) 100%);
+  width: 100%;
+  display: flex;
+  align-items: center;
+
+}
+
+.mtb-checkout-header-title {
+  display: flex;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 90%;
+  color: #013763;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 15px;
+  margin-left: 15px;
+  line-height:110%;
+  border-left: 1px solid #013763;
+}
+
+.mtb-checkout-loading-text {
+  font-family: 'Poppins';
+  font-size: 100%;
+  font-weight: bold;
+  display: inline-block;
+  color: #013763;
+}
+
+.mtb-checkout-text {
+  font-family: 'Poppins';
+  font-size: 90%;
+  font-weight:500;
+  display: inline-block;
+  color: #013763;
+}
+
+/* MTB Cart Order Group Member */
+.mtb-cartordergroup-text-title {
+  color: #013763;
+  font-family: Poppins;
+  font-size: 100%;
+  font-weight: 600;
+}
+
+.mtb-cartordergroup-text-sub {
+  color: #93ACC1;
+  font-family: Poppins;
+  font-size: 90%;
+  font-weight: 500;
 }
